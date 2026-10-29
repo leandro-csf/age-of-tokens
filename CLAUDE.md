@@ -17,4 +17,5 @@ Jogo idle estilo Age of Empires: uma aldeia global evolui sozinha (sem decisão 
 
 ## Layout
 - `ingest/`: parsers e acumulador de tokens copiados do session manager (`npm test` em `ingest/`).
+- `sim/`: motor de simulação puro (sem I/O): estado, eventos da ingestão, decisor, níveis/eras. Fonte da verdade dos números: `sim/src/rules.js` e `sim/src/content.js` (`npm test` em `sim/`).
 - `docs/`: conceito, decisões, progresso, stack.

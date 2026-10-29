@@ -1,5 +1,7 @@
 # Conteudo por era (rascunho v1)
 
+> Implementado em `sim/src/content.js` (fonte da verdade dos numeros; este texto e a intencao). Os custos de todas as eras foram fechados la e validados por `sim/test/budget.test.js` (60-80% da renda da era; nenhum recurso acima da renda dele).
+
 Complementa REGRAS.md. Custos em recursos do jogo (nao em tokens). Gastar recurso NAO reduz a renda acumulada R (ela conta so o que foi ganho), entao o nivel nunca regride.
 
 ## Escala de custos

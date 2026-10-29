@@ -31,3 +31,12 @@
 - Conteudo por era em docs/CONTEUDO.md. Custos escalam por fator de era (x1/x9/x85/x800) para o conteudo custar ~75% da renda da era.
 - Techs dao +5% de producao por recurso por era (max +20%); arvore e ordem de compra identicas para todos, preservando a comparabilidade.
 - Unidades militares so decoram e contam para populacao (por ora). Maravilha no Imperial libera o prestigio.
+
+## 2026-10-29 (M1: motor de simulacao)
+- `sim/` e puro: toda funcao recebe um estado e devolve um novo (structuredClone); estado e JSON puro e serializa direto para o save.
+- Decisor: no maximo uma acao por `step`, ordem fixa (casa se pop no teto, treinar, pesquisar, avancar de era, proximo predio). Em casa/treino/predio so conta a PROXIMA entrada da lista; sem recurso ela economiza em vez de pular para algo mais barato (determinismo e comparabilidade).
+- Construir custa pontos de obra: 10 x (era do predio + 1). Sem eventos `tool` a aldeia so treina e pesquisa.
+- Saque de subagente: 10 x fator da era, em comida e madeira (alto demais seria injusto: 191 subagentes no historico). Imigrante de sessao nova: +1 aldeao se houver vaga.
+- "Bonus de moral" da sessao nova ficou de fora do M1 (sem efeito definido).
+- Prestigio: so `canPrestige` (Maravilha construida). A transicao (reset, bioma, bonus, escala de custos pos-prestigio) fica para depois, porque a renda vitalicia ja passa do nivel 30 e os custos precisam de nova regra.
+- Valores de conteudo das eras 2-4 fechados em sim/src/content.js; orcamentos: 76,5% / 71,1% / 78,5% / 74,7% da renda de cada era.
