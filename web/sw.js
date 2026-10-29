@@ -1,7 +1,7 @@
 // Service worker: deixa o jogo abrir sem rede (a casca e os sprites ficam guardados no aparelho).
 // So funciona em contexto seguro (localhost ou HTTPS): em http://192.168.x.x o navegador nao registra.
 // A API (/api/*) NUNCA e guardada: o estado vem sempre ao vivo do servidor.
-const VERSION = 'v1';
+const VERSION = 'v2';
 const SHELL_CACHE = `aot-shell-${VERSION}`;
 const SPRITES_CACHE = 'aot-sprites';   // fora da versao: sao grandes e nao mudam
 
@@ -17,6 +17,8 @@ const SHELL = [
   '/world/stages.js',
   '/ui/skins.js',
   '/ui/card.js',
+  '/ui/counters.js',
+  '/ui/format.js',
   '/fonts/fonts.css',
   '/fonts/jacquard12-400.woff2',
   '/fonts/pixelifysans-400-700.woff2',

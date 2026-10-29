@@ -77,3 +77,10 @@
 - [ ] Prestigio (nova aldeia em outro bioma) sem visual; estagio 10 (Maravilha) ainda modesto.
 - [ ] Migracao de save entre versoes do motor.
 - [ ] Revisar com o usuario o HUD e as proporcoes em tablet real.
+
+## 2026-10-29: pos-M5
+- [x] Incidente "numeros a zero" resolvido (contadores dependiam do requestAnimationFrame). 100 testes.
+- [ ] Robustez do save: migracao entre versoes, backup rotativo, trava de instancia unica (evita dois servidores gravando o mesmo save). SQLite (`node:sqlite`, ja vem no Node 24) so se o usuario quiser.
+- [ ] Prestigio.
+- [ ] Acabamento da arte (Maravilha, acampamento).
+- [ ] Abrir sozinho com o Windows.

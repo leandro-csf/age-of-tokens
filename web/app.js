@@ -2,6 +2,7 @@ import { loadAssets } from './world/assets.js';
 import { createScene } from './world/scene.js';
 import { loadSkins, paintAll } from './ui/skins.js';
 import { compact } from './ui/format.js';
+import { createCounters } from './ui/counters.js';
 import { cardLines, makeCard, shareOrDownload } from './ui/card.js';
 
 const $ = id => document.getElementById(id);
@@ -25,21 +26,11 @@ function fit() { $('stage').style.setProperty('--k', Math.min(innerWidth / 1340,
 addEventListener('resize', fit);
 fit();
 
-// ---------- numeros que rolam ate o valor ----------
-const counters = new Map();
-function setTarget(id, value) {
-  if (!counters.has(id)) counters.set(id, { el: $(id), cur: value, target: value, shown: null });
-  counters.get(id).target = value;
-}
-function tick() {
-  for (const c of counters.values()) {
-    const d = c.target - c.cur;
-    c.cur = Math.abs(d) < 0.5 ? c.target : c.cur + d * 0.18;
-    const text = compact(c.cur);
-    if (text !== c.shown) { c.el.textContent = text; c.shown = text; }
-  }
-  requestAnimationFrame(tick);
-}
+// ---------- numeros que rolam ate o valor (logica e regra em ui/counters.js) ----------
+const counters = createCounters({ find: $ });
+const setTarget = (id, value) => counters.set(id, value);
+function tick() { counters.frame(); requestAnimationFrame(tick); }
+setInterval(() => counters.settle(), 400);   // rede de seguranca: sem quadros de animacao, salta para o valor final
 
 // ---------- render ----------
 function levelBounds(level) {

@@ -65,7 +65,7 @@ const req = (p, extra = {}) => ({ url: ORIGIN + p, method: 'GET', mode: 'cors', 
 test('instalacao: guarda a casca inteira e assume o controle', async () => {
   const env = makeEnv();
   await fire(env, 'install');
-  const shell = env.stores.get('aot-shell-v1');
+  const shell = env.stores.get('aot-shell-v2');
   assert.ok(shell.has(ORIGIN + '/index.html') && shell.has(ORIGIN + '/app.js') && shell.has(ORIGIN + '/fonts/fonts.css'));
   assert.ok(shell.size >= 15);
   assert.equal(env.state.skipped, true);
@@ -75,17 +75,17 @@ test('instalacao tolera um arquivo ausente (nao derruba tudo)', async () => {
   const env = makeEnv();
   env.net.routes['/ui/card.js'] = { status: 404, body: 'x' };
   await fire(env, 'install');
-  const shell = env.stores.get('aot-shell-v1');
+  const shell = env.stores.get('aot-shell-v2');
   assert.ok(shell.has(ORIGIN + '/index.html'));
   assert.ok(!shell.has(ORIGIN + '/ui/card.js'));
 });
 
 test('ativacao: apaga cache de versao velha e mantem os sprites', async () => {
   const env = makeEnv();
-  env.stores.set('aot-shell-v0', new Map());
+  env.stores.set('aot-shell-v1', new Map());
   env.stores.set('aot-sprites', new Map([[ORIGIN + '/assets/a.png', { status: 200, body: 'png' }]]));
   await fire(env, 'activate');
-  assert.ok(!env.stores.has('aot-shell-v0'));
+  assert.ok(!env.stores.has('aot-shell-v1'));
   assert.ok(env.stores.has('aot-sprites'));
   assert.equal(env.state.claimed, true);
 });
@@ -143,5 +143,5 @@ test('arquivos da casca: serve o guardado e atualiza em segundo plano', async ()
   const r = await fire(env, 'fetch', { request: req('/style.css') });
   assert.equal(await r.response.text(), 'v1', 'serve o guardado na hora');
   await new Promise(res => setTimeout(res, 20));   // deixa a atualizacao terminar
-  assert.equal((await env.stores.get('aot-shell-v1').get(ORIGIN + '/style.css')).body, 'v2');
+  assert.equal((await env.stores.get('aot-shell-v2').get(ORIGIN + '/style.css')).body, 'v2');
 });
