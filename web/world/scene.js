@@ -2,7 +2,8 @@ import { A, frame } from './assets.js';
 import { createNav } from './nav.js';
 import { createCrowd } from './actors.js';
 import {
-  TILE, WORLD_W, WORLD_H, ISLAND, CENTER, FOOT, layoutAll, visible, extent, treeField, grassTile, hash,
+  TILE, WORLD_W, WORLD_H, ISLAND, CENTER, FOOT, WALL, SEA_ROCKS, DUCK, layoutAll, visible, extent, treeField, grassTile,
+  decorField, underBuilding, hash,
 } from './layout.js';
 
 /*
@@ -51,6 +52,11 @@ export function createScene(canvas, content) {
   const crowd = createCrowd(navRef);
   const puffs = [];
   const aliveTrees = trees.filter(t => !t.stump);
+  const flags = { clouds: true, shadows: true, wall: true, decor: true };   // depuracao: liga/desliga camadas
+  const decor = decorField();
+  let decorShown = decor;
+  // nuvens: passam devagar sobre o mapa (x em px do mundo)
+  const clouds = [0, 1, 2, 3, 4].map(i => ({ x: i * 640 - 300, y: 200 + ((i * 337) % 1100), v: 1 + (i * 3) % 8, speed: 14 + (i * 5) % 12 }));
 
   // ---------- terreno pre-desenhado: agua (fundo) e terra (grama), com a espuma animada entre as duas ----------
   let land = null;
@@ -104,6 +110,13 @@ export function createScene(canvas, content) {
     if (!s) return;
     const w = s.fw * sc, h = s.fh * sc;
     const p = progress(b, t);
+    // sombra no chao: ancora o predio no terreno
+    const sw = (FOOT[b.id] ? FOOT[b.id][0] : w * 0.6) * 1.35;
+    if (flags.shadows) {
+      ctx.globalAlpha = 0.32 * Math.min(1, p * 2);
+      ctx.drawImage(A.shadow.img, b.x - sw / 2, b.y - sw * 0.27, sw, sw * 0.5);
+    }
+    ctx.globalAlpha = 1;
     if (p >= 1) { ctx.drawImage(s.img, b.x - w / 2, b.y - h + 6, w, h); }
     else {
       // obra: a construcao "sobe" do chao, de baixo para cima
@@ -137,13 +150,20 @@ export function createScene(canvas, content) {
     });
   }
 
+  // muralha: torreoes pequenos e escuros ao longo do anel (o tileset de rampa nao tem relevo e virava placa)
   function drawWall(b) {
-    const s = A['rock' + (1 + b.k % 4)];
-    ctx.drawImage(s.img, b.x - 32, b.y - 58);
-    ctx.drawImage(A['rock' + (1 + (b.k + 2) % 4)].img, b.x - 8, b.y - 46);
+    const s = A.Tower_Black, sc = 0.6, w = s.fw * sc, h = s.fh * sc;
+    ctx.globalAlpha = 0.3;
+    ctx.drawImage(A.shadow.img, b.x - 40, b.y - 14, 80, 36);
+    ctx.globalAlpha = 1;
+    ctx.drawImage(s.img, b.x - w / 2, b.y - h + 4, w, h);
   }
 
-  /** Avanca a simulacao (aldeoes, obras, noite) em dt segundos. Separado do desenho para poder ser testado. */
+  function drawDecor(d, t) {
+    if (d.kind === 'bush') frame(ctx, A['bush' + (1 + d.v)], t * 5 + d.v * 2 + d.x, d.x - 64, d.y - 100);
+    else ctx.drawImage(A['rock' + (1 + d.v)].img, d.x - 32, d.y - 52);
+  }
+
   function tick(dt) {
     // habitantes: o que existe agora no mapa e o que ha para fazer
     night += ((awake ? 0 : 1) - night) * Math.min(1, dt * 1.5);
@@ -181,12 +201,17 @@ export function createScene(canvas, content) {
     const fr = t * FOAM_FPS;
     for (const [tx, ty] of edgeTiles) frame(ctx, A.foam, fr + (tx * 3 + ty) * 0.35, tx * TILE + TILE / 2 - 96, ty * TILE + TILE / 2 - 96);
     ctx.drawImage(land, 0, 0);
+    // mar: pedras que balancam e o patinho de borracha
+    for (const r of SEA_ROCKS) frame(ctx, A['waterRocks' + (1 + r.v)], t * 6 + r.v * 3, r.x - 32, r.y - 32);
+    frame(ctx, A.duck, t * 3, DUCK.x - 16, DUCK.y - 16 + Math.sin(t * 1.8) * 2.5);
 
     const dt = Math.min(0.1, drawScene.dt || 0.016);
     tick(dt);
 
     items.length = 0;
-    crowd.drawables(ctx, push);
+    // unidades crescem ate 35% quando a camera esta longe: legibilidade a 0,5x
+    crowd.drawables(ctx, push, 1 + (1 - cam.z) * 0.7);
+    if (flags.decor) for (const d of decorShown) push(d.y, () => drawDecor(d, t));
     for (const tr of trees) {
       push(tr.y, () => {
         if (tr.stump) { const s = A['stump' + (1 + tr.type % 4)]; ctx.drawImage(s.img, tr.x - 96, tr.y - 232); return; }
@@ -195,7 +220,7 @@ export function createScene(canvas, content) {
       });
     }
     for (const b of vis) {
-      if (b.id === 'muralha') push(b.y, () => drawWall(b));
+      if (b.id === 'muralha') { if (flags.wall) push(b.y, () => drawWall(b)); }
       else if (b.id === 'mina') push(b.y, () => drawMine(b));
       else if (b.id === 'fazenda') push(b.y - 40, () => drawFarm(b, t));
       else push(b.y, () => { drawBuilding(b, t); drawExtras(b, t); });
@@ -208,6 +233,16 @@ export function createScene(canvas, content) {
       if (q.age > 0.8) { puffs.splice(i, 1); continue; }
       frame(ctx, A.dust1, q.age * 10, q.x - 32, q.y - 48);
     }
+
+    // nuvens: translucidas, derivam para a direita e reaparecem do outro lado
+    ctx.globalAlpha = 0.5;
+    for (const c of (flags.clouds ? clouds : [])) {
+      c.x += c.speed * dt;
+      if (c.x > WORLD_W * TILE + 300) c.x = -700;
+      const s = A['cloud' + c.v];
+      ctx.drawImage(s.img, c.x, c.y);
+    }
+    ctx.globalAlpha = 1;
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (night > 0.01) { ctx.fillStyle = `rgba(14,20,56,${0.42 * night})`; ctx.fillRect(0, 0, STAGE_W, STAGE_H); }
@@ -236,7 +271,7 @@ export function createScene(canvas, content) {
       if (JSON.stringify(nb) !== JSON.stringify(built)) {
         const now = performance.now();
         if (!first) for (const [id, n] of Object.entries(nb)) for (let k = built[id] || 0; k < n; k++) rising.set(`${id}:${k}`, now);
-        built = { ...nb }; vis = visible(placed, built); aim(); buildNav();
+        built = { ...nb }; vis = visible(placed, built); decorShown = decor.filter(p => !underBuilding(p, vis)); aim(); buildNav();
       }
       crowd.sync(units, DOOR);
       first = false;
@@ -246,6 +281,9 @@ export function createScene(canvas, content) {
     get info() { return { folks: crowd.count(), rising: rising.size, night, zoom: cam.z, target: target.z, buildings: vis.length, drawMs: Math.round(drawMs * 100) / 100 }; },
     drawNow() { drawScene(performance.now()); },
     /** Salta a camera direto para o enquadramento alvo (testes). */
+    /** Aponta a camera para (x, y) com zoom z, sem animar (inspecao de detalhes). */
+    flags,
+    lookAt(x, y, z = 1) { target = { x, y, z }; cam.x = x; cam.y = y; cam.z = z; },
     snapCamera() { cam.x = target.x; cam.y = target.y; cam.z = target.z; },
     /** Avanca `sec` segundos de simulacao sem desenhar (testes e demonstracoes). */
     advance(sec, step = 0.05) { for (let t = 0; t < sec; t += step) tick(step); },

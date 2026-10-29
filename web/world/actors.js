@@ -62,10 +62,11 @@ export function createCrowd(ref) {
 
   function targetFor(job, w) {
     switch (job) {
-      case 'build': { const s = pick(w.sites); return { x: s.x + rnd(-40, 40), y: s.y + 26 }; }
-      case 'wood': { const t = pick(w.trees); return { x: t.x + (Math.random() < 0.5 ? -38 : 38), y: t.y + 6 }; }
-      case 'gold': case 'stone': { const m = pick(w.mines); return { x: m.x + rnd(-70, 70), y: m.y + rnd(18, 40) }; }
-      case 'food': { const p = pick(w.pastures); return { x: p.x + rnd(-60, 60), y: p.y + 14 }; }
+      // look = x do que ele vai trabalhar: ao chegar, o aldeao vira o rosto para la
+      case 'build': { const s = pick(w.sites); return { x: s.x + rnd(-40, 40), y: s.y + 26, look: s.x }; }
+      case 'wood': { const t = pick(w.trees); return { x: t.x + (Math.random() < 0.5 ? -38 : 38), y: t.y + 6, look: t.x }; }
+      case 'gold': case 'stone': { const m = pick(w.mines); return { x: m.x + rnd(-70, 70), y: m.y + rnd(18, 40), look: m.x }; }
+      case 'food': { const p = pick(w.pastures); return { x: p.x + rnd(-60, 60), y: p.y + 14, look: p.x }; }
       default: return null;
     }
   }
@@ -91,10 +92,10 @@ export function createCrowd(ref) {
         if (f.wait > 0 || !w.awake) return;
         const job = chooseJob(f, w);
         const tgt = job && targetFor(job, w);
-        if (job && tgt && go(f, tgt.x, tgt.y)) { f.job = job; f.state = 'goto'; f.carry = ''; } else f.wait = rnd(1, 3);
+        if (job && tgt && go(f, tgt.x, tgt.y)) { f.job = job; f.look = tgt.look; f.state = 'goto'; f.carry = ''; } else f.wait = rnd(1, 3);
         return;
       }
-      case 'goto': if (move(f, dt)) { f.state = 'work'; f.t = 0; f.swing = 0; } return;
+      case 'goto': if (move(f, dt)) { f.state = 'work'; f.t = 0; f.swing = 0; if (f.look !== undefined && Math.abs(f.look - f.x) > 4) f.dir = f.look > f.x ? 1 : -1; } return;
       case 'work': {
         const J = JOBS[f.job], s = A[J.work];
         f.swing = f.t * FPS / s.n;
@@ -160,14 +161,18 @@ export function createCrowd(ref) {
     }
   }
 
-  function drawables(ctx, push) {
+  function drawables(ctx, push, boost = 1) {
     for (const f of folks) {
       push(f.y, () => {
         const { s, anchor } = sheetOf(f);
         if (!s) return;
         const flip = f.dir < 0;
-        // espelha em torno do ponto de ancoragem (os pes), nao do canto do quadro
-        frame(ctx, s, f.t * FPS, f.x - (flip ? s.fw - anchor[0] : anchor[0]), f.y - anchor[1], flip);
+        // ancorado nos pes; `boost` aumenta as unidades quando a camera esta longe (como nos RTS)
+        ctx.save();
+        ctx.translate(f.x, f.y);
+        ctx.scale(boost, boost);
+        frame(ctx, s, f.t * FPS, -(flip ? s.fw - anchor[0] : anchor[0]), -anchor[1], flip);
+        ctx.restore();
       });
     }
   }

@@ -35,6 +35,10 @@ function manifest() {
   for (let i = 1; i <= 4; i++) add('bush' + i, `Terrain/Decorations/Bushes/Bushe${i}.png`, 128, 128);
   for (let i = 1; i <= 4; i++) add('rock' + i, `Terrain/Decorations/Rocks/Rock${i}.png`);
 
+  for (let i = 1; i <= 4; i++) add('waterRocks' + i, `Terrain/Decorations/Rocks in the Water/Water Rocks_0${i}.png`, 64, 64);
+  add('duck', 'Terrain/Decorations/Rubber Duck/Rubber duck.png', 32, 32);
+  for (let i = 1; i <= 8; i++) add('cloud' + i, `Terrain/Decorations/Clouds/Clouds_0${i}.png`);
+
   for (const c of COLORS) {
     for (const b of ['House1', 'House2', 'House3', 'Barracks', 'Archery', 'Tower', 'Monastery', 'Castle']) add(`${b}_${c}`, `Buildings/${c} Buildings/${b}.png`);
   }

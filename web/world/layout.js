@@ -175,6 +175,44 @@ export function extent(buildings) {
   return { x0, y0, x1, y1 };
 }
 
+// ---------- decoracao do chao: arbustos e pedras nos vaos da vila ----------
+/**
+ * Pontos de decoracao espalhados pela zona da vila. A cena esconde os que ficam sob um predio
+ * existente (o arbusto "some" quando a obra comeca em cima), entao a vila vazia nao fica pelada.
+ * Longe do anel de muralha. Deterministico.
+ */
+export function decorField() {
+  const out = [];
+  for (let y = TOWN.y0 + 30; y <= TOWN.y1 - 10; y += 80) {
+    for (let x = TOWN.x0 + 30; x <= TOWN.x1 - 30; x += 80) {
+      const h = hash(x * 3 + 1, y * 5 + 2);
+      if (h % 100 > 30) continue;
+      const px = x + ((h >>> 8) % 40) - 20, py = y + ((h >>> 16) % 40) - 20;
+      if (px < WALL.x0 + 70 || px > WALL.x1 - 70 || py < WALL.y0 + 70 || py > WALL.y1 - 40) continue;
+      if (MINE_SITES.some(m => Math.abs(m.x - px) < 160 && Math.abs(m.y - py) < 120)) continue;
+      out.push({ x: px, y: py, kind: (h >>> 4) % 5 < 3 ? 'bush' : 'rock', v: (h >>> 12) % 4 });
+    }
+  }
+  return out.sort((a, b) => a.y - b.y);
+}
+
+/** O ponto (x, y) esta sob (ou colado em) algum dos predios `buildings`? */
+export function underBuilding(p, buildings, margin = 44) {
+  return buildings.some(b => {
+    const f = FOOT[b.id];
+    if (!f) return false;
+    return p.x > b.x - f[0] / 2 - margin && p.x < b.x + f[0] / 2 + margin && p.y > b.y - f[1] - margin && p.y < b.y + margin / 2;
+  });
+}
+
+// ---------- mar: pedras e o patinho ----------
+export const SEA_ROCKS = [
+  { x: 1.3 * TILE, y: 6.5 * TILE, v: 0 }, { x: 1.8 * TILE, y: 18 * TILE, v: 1 },
+  { x: 40.4 * TILE, y: 9 * TILE, v: 2 }, { x: 40.9 * TILE, y: 20 * TILE, v: 3 },
+  { x: 14 * TILE, y: 23.9 * TILE, v: 1 }, { x: 30 * TILE, y: 0.9 * TILE, v: 2 },
+];
+export const DUCK = { x: 1.1 * TILE, y: 12.5 * TILE };
+
 // ---------- terreno: autotile da grama (blocos 3x3 de Tilemap_color1) ----------
 /** [coluna, linha] do tile da grama em (tx, ty) no tileset, ou null se for agua. */
 export function grassTile(tx, ty) {

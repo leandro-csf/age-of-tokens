@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ERAS } from '../../sim/src/index.js';
 import {
-  layoutAll, visible, extent, expandPlan, treeField, grassTile, TOWN, FOOT, TILE, ISLAND, MINE_SITES, WALL, CENTER,
+  layoutAll, visible, extent, expandPlan, treeField, grassTile, decorField, underBuilding, TOWN, FOOT, TILE, ISLAND, MINE_SITES, WALL, CENTER,
 } from '../world/layout.js';
 
 const plan = ERAS.map(e => e.buildings.map(b => ({ id: b.id, count: b.count })));
@@ -103,4 +103,22 @@ test('autotile da grama: cantos, bordas e centro', () => {
   assert.deepEqual(grassTile(ISLAND.x0, 10), [0, 1]);
   assert.deepEqual(grassTile(10, 10), [1, 1]);
   assert.equal(grassTile(ISLAND.x0 - 1, 10), null);
+});
+
+test('decoracao: determinista, dentro da zona, espalhada e longe das jazidas', () => {
+  const d = decorField();
+  assert.ok(d.length >= 40 && d.length <= 200, 'quantidade ' + d.length);
+  assert.deepEqual(decorField(), d);
+  for (const p of d) {
+    assert.ok(p.x > TOWN.x0 && p.x < TOWN.x1 && p.y > TOWN.y0 && p.y < TOWN.y1);
+    assert.ok(MINE_SITES.every(m => Math.abs(m.x - p.x) >= 160 || Math.abs(m.y - p.y) >= 120), 'decoracao em cima da jazida');
+  }
+});
+
+test('underBuilding: acerta quem esta sob um predio e deixa o resto', () => {
+  const vis = visible(placed, { casa: 1 });
+  const casa = vis.find(b => b.id === 'casa');
+  assert.ok(underBuilding({ x: casa.x, y: casa.y - 30 }, vis));
+  assert.ok(!underBuilding({ x: casa.x + 600, y: casa.y }, vis));
+  assert.ok(underBuilding({ x: CENTER.x, y: CENTER.y + 20 }, vis), 'castelo');
 });

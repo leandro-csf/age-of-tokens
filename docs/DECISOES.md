@@ -87,3 +87,12 @@
 - HUD: faixas finas no topo e na base para deixar a ilha livre. Fita azul com a era, papel creme para recursos (icones tora/carne/moeda do pacote e pedra), mesa de madeira para o nivel, papel ardosia com filigrana para a cronica (some depois de 12 s sem novidade). Paineis 9-fatias recompostos em tempo de execucao a partir de folhas com pecas separadas (medidas conferidas peca por peca).
 - Sem os sprites (clone novo), a pagina mostra instrucoes de como baixar em vez de quebrar.
 - Limites conhecidos: verificado so no navegador embutido, com requestAnimationFrame limitado (usei `advance()` e `snapCamera()` para simular tempo); HUD avaliado em capturas reduzidas (60%); sem som; ancoras dos sprites dos aldeoes ajustadas a olho; unidades "cerco" nao existem no pacote.
+
+## 2026-10-29 (ajustes de arte, rodada 1)
+- Pedidos do usuario: tamanho/legibilidade, aldeoes e animacoes, predios/muralha/terreno. Camera mantida (1:1 e depois 0,5x).
+- Legibilidade: HUD com fontes ~15-20% maiores (numeros 22 px, rotulos 14 px, crônica 16 px) e rotulos curtos (Pop., Pesq.) para nao se atropelarem; fita da era e barra de recursos reajustadas. Unidades crescem ate 35% quando a camera esta longe (`1 + (1 - zoom) * 0,7`), como nos RTS.
+- Aldeoes: viram o rosto para o que estao trabalhando (arvore, mina, pasto, obra) em vez de olhar para onde andavam.
+- Muralha: a rampa do tileset (grama + face de pedra) virou placa chapada sem relevo; trocada por torreoes pequenos escuros (Tower Black a 60%) ao longo do anel.
+- Terreno: sombra suave sob cada predio (Shadow.png, que so ocupa o miolo 79x80 da imagem 192x192), arbustos animados e pedras espalhados pela vila (somem quando um predio e construido em cima, via `underBuilding`), nuvens translucidas que derivam, pedras que balancam no mar e o patinho de borracha.
+- Depuracao: `scene.flags` liga/desliga camadas (clouds, shadows, wall, decor), `scene.lookAt(x, y, zoom)` para inspecionar de perto.
+- Licao: capturas do painel em segundo plano podem mostrar um quadro antigo; sempre chamar `drawNow()` e conferir de perto (zoom 1) antes de concluir que algo esta errado.
