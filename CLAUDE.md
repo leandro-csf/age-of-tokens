@@ -11,7 +11,7 @@ Jogo idle estilo Age of Empires: uma aldeia global evolui sozinha (sem decisão 
 - Fonte de dados: `~/.claude` (CLAUDE_HOME). SOMENTE LEITURA, nunca escrever lá.
 - Sempre `JSON.parse` da linha e ler o `.type` do topo; nunca regex na linha crua.
 - Deduplicar tokens por `message.id` (cada bloco de conteúdo repete o mesmo usage).
-- Reuso do `C:\Users\EVO\Documents\evo_session_manager` é por cópia/adaptação, sem dependência entre repos. Formato dos dados: `docs/formato-dados-claude.md`.
+- Reuso do `evo_session_manager` (projeto irmão, uma pasta acima) é por cópia/adaptação, sem dependência entre repos. Formato dos dados: `docs/formato-dados-claude.md`.
 - O jogo guarda o próprio save (o session manager não tem histórico).
 - Ociosidade não pune: sem uso, a aldeia só dorme.
 
