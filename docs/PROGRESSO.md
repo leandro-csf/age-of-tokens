@@ -11,3 +11,10 @@
 - [ ] Implementar o motor de simulacao (modulo puro, testavel) lendo os eventos da ingestao.
 - [ ] Detectar fim de sessao / sessao ativa (liveness do session manager ainda nao portado) para aldeoes animados.
 - [ ] Modelo de save do jogo (separado do save da ingestao) e como a ingestao alimenta a simulacao.
+
+## Roteiro ate rodar (marcos)
+- [ ] M1 Motor: `sim/` puro e testavel (estoque, decisor, niveis/eras, custos). Sem I/O.
+- [ ] M2 Servidor local: `server/` junta ingestao + motor + save do jogo; um comando (`npm start`) e porta definida; expoe estado e eventos por SSE.
+- [ ] M3 Primeira versao rodavel: pagina minima em portrait (contadores de recursos, nivel/era, tokens crus, log de eventos). Ja da para abrir no navegador e ver a aldeia subir com uso real.
+- [ ] M4 Aldeia visual: canvas isometrico pixel art com aldeoes e predios animados.
+- [ ] M5 PWA no celular: acesso pela rede local, instalavel, cartao exportavel.
