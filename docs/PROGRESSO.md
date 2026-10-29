@@ -62,3 +62,11 @@
 - [ ] Ciclo de coleta: peao vai ao recurso, trabalha, volta carregando e deposita.
 - [ ] Unidades militares (guerreiro, arqueiro, lanceiro, monge) e efeitos (poeira, fogo).
 - [ ] HUD e molduras com a interface do pacote (faixas, mesa de madeira, botoes, barras).
+
+## Nucleo que evolui (feito, para revisar com o usuario)
+- [x] 11 estagios por nivel (`web/world/stages.js`), cena de camera fixa, chegada animada de cada elemento, aviso de evolucao.
+- [x] HUD so o essencial; detalhes ao tocar nos recursos (ou D).
+- [x] Testes de estagios (11) e navegacao; 72 testes na raiz.
+- [ ] Ver em tablet real; revisar proporcoes com o usuario.
+- [ ] Reforcar o estagio 10 (Maravilha) e talvez dar mais vida ao estagio 0.
+- [ ] `web/world-dev.html` ficou desatualizada (API antiga): atualizar ou remover.

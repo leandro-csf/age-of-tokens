@@ -35,11 +35,11 @@ export function createCrowd(ref) {
   }
 
   /** Ajusta a quantidade de cada tipo ao que o jogo informa. */
-  function sync(units, door) {
+  function sync(units, door, caps = CAP) {
     const want = {};
     for (const [id, n] of Object.entries(units || {})) { const k = KIND[id]; if (k) want[k] = (want[k] || 0) + n; }
     for (const kind of Object.keys(CAP)) {
-      const target = Math.min(want[kind] || 0, CAP[kind]);
+      const target = Math.min(want[kind] || 0, caps[kind] ?? CAP[kind]);
       let have = folks.filter(f => f.kind === kind).length;
       while (have < target) { spawn(kind, door.x + rnd(-60, 60), door.y + rnd(0, 40)); have++; }
       while (have > target) { folks.splice(folks.findIndex(f => f.kind === kind), 1); have--; }

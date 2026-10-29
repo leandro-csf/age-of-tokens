@@ -1,10 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createNav, CELL } from '../world/nav.js';
-import { ERAS } from '../../sim/src/index.js';
-import { layoutAll, visible, FOOT, TILE, WORLD_W, WORLD_H, ISLAND, CENTER } from '../world/layout.js';
-
-const rectOf = b => { const [w, h] = FOOT[b.id]; return { x0: b.x - w / 2, x1: b.x + w / 2, y0: b.y - h, y1: b.y }; };
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 
 test('caminho contorna um predio no meio', () => {
@@ -38,28 +34,6 @@ test('fora da terra firme e bloqueado', () => {
   const nav = createNav({ width: 640, height: 640, landRect: { x0: 100, y0: 100, x1: 500, y1: 500 } });
   assert.equal(nav.free(50, 50), false);
   assert.equal(nav.free(300, 300), true);
-});
-
-test('na aldeia completa, do castelo a cada predio, a cada arvore da borda e a cada mina existe caminho', () => {
-  const plan = ERAS.map(e => e.buildings.map(b => ({ id: b.id, count: b.count })));
-  const vis = visible(layoutAll(plan), Object.fromEntries(ERAS.flatMap(e => e.buildings).map(b => [b.id, 999])));
-  const rects = vis.filter(b => FOOT[b.id]).map(rectOf);
-  const nav = createNav({
-    width: WORLD_W * TILE, height: WORLD_H * TILE, rects, inflate: 4,
-    landRect: { x0: ISLAND.x0 * TILE + 24, y0: ISLAND.y0 * TILE + 24, x1: (ISLAND.x1 + 1) * TILE - 24, y1: (ISLAND.y1 + 1) * TILE - 24 },
-  });
-  const from = { x: CENTER.x, y: CENTER.y + 120 };
-  let unreachable = 0;
-  for (const b of vis) {
-    if (b.id === 'muralha') continue;
-    const p = nav.find(from.x, from.y, b.x, b.y + 30);
-    if (!p.length) unreachable++;
-  }
-  assert.equal(unreachable, 0, `${unreachable} predios sem caminho a partir do castelo`);
-  // pontos da borda da ilha (onde ficam as arvores)
-  for (const [x, y] of [[ISLAND.x0 * TILE + 60, 600], [(ISLAND.x1 + 1) * TILE - 60, 700], [1400, ISLAND.y0 * TILE + 60], [1300, (ISLAND.y1 + 1) * TILE - 60]]) {
-    assert.ok(nav.find(from.x, from.y, x, y).length >= 1, `sem caminho para ${x},${y}`);
-  }
 });
 
 test('o caminho tem comprimento razoavel (sem voltas absurdas)', () => {

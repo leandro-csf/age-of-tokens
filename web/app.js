@@ -6,7 +6,7 @@ const $ = id => document.getElementById(id);
 const nf = new Intl.NumberFormat('pt-BR');
 const AWAKE_MS = 90_000;   // sem tokens ha mais que isso -> a aldeia dorme
 const ACTING_MS = 10_000;  // obra/treino recente conta como acordada
-const LOG_MAX = 5;
+const TOAST_MS = 7_000;
 const UI = 'assets/tiny-swords/Tiny Swords (Free Pack)/UI Elements/UI Elements/';
 const icon = n => encodeURI(`${UI}Icons/${n}.png`);
 
@@ -16,14 +16,10 @@ let view = null;
 let connected = false;
 let lastIngest = 0;
 let lastAction = 0;
-let quietTimer = 0;
-const LOG_VISIBLE_MS = 12_000;
+let toastTimer = 0;
 
 // ---------- palco 1340x800 escalado para a tela ----------
-function fit() {
-  const k = Math.min(innerWidth / 1340, innerHeight / 800);
-  $('stage').style.setProperty('--k', k);
-}
+function fit() { $('stage').style.setProperty('--k', Math.min(innerWidth / 1340, innerHeight / 800)); }
 addEventListener('resize', fit);
 fit();
 
@@ -37,8 +33,6 @@ function compact(n) {
   if (n < 1e12) return f(n / 1e9, 'bi');
   return f(n / 1e12, 'tri');
 }
-const hhmm = () => new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-const nameOf = id => content?.names?.[id] ?? id;
 
 // ---------- numeros que rolam ate o valor ----------
 const counters = new Map();
@@ -86,7 +80,6 @@ function render() {
   $('s-build').textContent = nf.format(s.buildings);
   $('s-tech').textContent = `${view.techs}/${content.totalTechs}`;
   $('s-work').textContent = compact(view.work);
-
   setTarget('t-output', view.raw.output);
   setTarget('t-cacheRead', view.raw.cacheRead);
   setTarget('t-in', view.raw.input + view.raw.cacheCreation);
@@ -98,48 +91,35 @@ function render() {
 function renderStatus() {
   const now = Date.now();
   const awake = connected && (now - lastIngest < AWAKE_MS || now - lastAction < ACTING_MS);
-  const st = $('status');
-  st.classList.toggle('offline', !connected);
-  st.classList.toggle('awake', awake);
-  $('status-text').textContent = !connected ? 'Sem sinal do servidor' : awake ? 'A aldeia trabalha' : 'A aldeia dorme';
+  $('conn').hidden = connected;
   scene?.setAwake(awake);
 }
 
-// ---------- cronica ----------
-function log(iconName, text, cls = '') {
+// ---------- aviso de marcos ----------
+function toast(iconName, text, cls = '') {
   const ol = $('log');
-  ol.querySelector('.empty')?.remove();
   const li = document.createElement('li');
   if (cls) li.className = cls;
   li.innerHTML = `<img src="${icon(iconName)}" alt=""><span></span>`;
-  li.querySelector('span').textContent = `${hhmm()}  ${text}`;
+  li.querySelector('span').textContent = text;
   ol.prepend(li);
-  while (ol.children.length > LOG_MAX) ol.lastChild.remove();
-  // aparece com a novidade e some depois de um tempo
-  $('log-box').classList.remove('quiet');
-  clearTimeout(quietTimer);
-  quietTimer = setTimeout(() => $('log-box').classList.add('quiet'), LOG_VISIBLE_MS);
+  while (ol.children.length > 2) ol.lastChild.remove();
+  $('toast').classList.remove('quiet');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => $('toast').classList.add('quiet'), TOAST_MS);
 }
 
-// tokens chegam em rajadas: junta numa linha so
-let burst = null;
-function addTokens(ev) {
-  if (!burst) {
-    burst = { out: 0, cache: 0, n: 0 };
-    setTimeout(() => {
-      log('Icon_07', `+${compact(burst.out)} saída, +${compact(burst.cache)} cache`, 'tok');
-      burst = null;
-    }, 1500);
-  }
-  burst.out += ev.output; burst.cache += ev.cacheRead; burst.n++;
+// ---------- detalhes ao tocar ----------
+function toggleDetails(force) {
+  const d = $('details');
+  const open = force ?? d.hidden;
+  d.hidden = !open;
+  $('res-bar').setAttribute('aria-expanded', String(open));
+  if (open) paintAll(d.parentElement);   // o painel foi medido escondido; repinta agora que tem tamanho
 }
-
-const ACTIONS = {
-  build: id => ['Icon_01', `Construída: ${nameOf(id)}`],
-  train: id => ['Icon_05', `Treinado: ${nameOf(id)}`],
-  research: id => ['Icon_11', `Pesquisa: ${nameOf(id)}`],
-  advance: id => ['Icon_06', `Nova era: ${nameOf(id)}`],
-};
+$('res-bar').addEventListener('click', () => toggleDetails());
+$('details').addEventListener('click', () => toggleDetails(false));
+addEventListener('keydown', e => { if (e.key === 'd' || e.key === 'D') toggleDetails(); if (e.key === 'Escape') toggleDetails(false); });
 
 // ---------- stream ----------
 function connect() {
@@ -152,17 +132,15 @@ function connect() {
   es.addEventListener('ingest', e => {
     const ev = JSON.parse(e.data);
     lastIngest = Date.now();
-    if (ev.type === 'tokens') addTokens(ev);
-    else if (ev.type === 'session:new') log('Icon_12', 'Nova sessão: um imigrante chegou');
-    else if (ev.type === 'subagent:new') log('Icon_08', 'Um explorador partiu em missão');
+    if (ev.type === 'session:new') toast('Icon_12', 'Nova sessão: um imigrante chegou');
+    else if (ev.type === 'subagent:new') toast('Icon_08', 'Um explorador partiu em missão');
     renderStatus();
   });
   es.addEventListener('action', e => {
     const a = JSON.parse(e.data);
     lastAction = Date.now();
-    const [ic, text] = (ACTIONS[a.type] || (() => ['Icon_01', a.type]))(a.id);
-    log(ic, text, a.type === 'advance' ? 'big' : '');
     if (a.type === 'advance') {
+      toast('Icon_06', `Nova era: ${content?.names?.[a.id] ?? a.id}`, 'big');
       const stage = $('stage');
       stage.classList.remove('flash'); void stage.offsetWidth; stage.classList.add('flash');
     }
@@ -172,7 +150,6 @@ function connect() {
 
 // ---------- inicio ----------
 async function start() {
-  $('status-text').textContent = 'Carregando';
   try {
     await Promise.all([loadSkins(), loadAssets(), document.fonts?.ready]);
   } catch (err) {
@@ -182,16 +159,17 @@ async function start() {
   }
   document.querySelectorAll('img[data-icon]').forEach(el => { el.src = icon(el.dataset.icon); });
   document.querySelectorAll('img[data-rock]').forEach(el => { el.src = encodeURI('assets/tiny-swords/Tiny Swords (Free Pack)/Terrain/Decorations/Rocks/Rock1.png'); });
-  paintAll();
-  $('log-box').classList.add('quiet');
+  $('details').hidden = false; paintAll(); $('details').hidden = true;   // pinta tudo com tamanho real
+  $('toast').classList.add('quiet');
 
   try {
     content = await (await fetch('/api/content')).json();
   } catch {
-    $('status-text').textContent = 'Sem sinal do servidor';
+    $('conn').hidden = false;
     return setTimeout(start, 3000);
   }
-  scene = createScene($('world'), content);
+  scene = createScene($('world'));
+  scene.onStage = (stage, name) => toast('Icon_06', `Sua aldeia evoluiu: ${name}`, 'big');
   window.__scene = scene; // depuracao no console
   requestAnimationFrame(tick);
   setInterval(renderStatus, 2000);

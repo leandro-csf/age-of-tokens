@@ -2,67 +2,48 @@ import { A, frame } from './assets.js';
 import { createNav } from './nav.js';
 import { createCrowd } from './actors.js';
 import {
-  TILE, WORLD_W, WORLD_H, ISLAND, CENTER, FOOT, WALL, SEA_ROCKS, DUCK, layoutAll, visible, extent, treeField, grassTile,
-  decorField, underBuilding, hash,
-} from './layout.js';
+  STAGE_W, STAGE_H, TILE, ISLAND, LAND, STAGE_NAMES, SEA_ROCKS, DUCK,
+  stageFor, elementsAt, rectOf, crowdCaps, depositAt, treeField, grassTile,
+} from './stages.js';
 
 /*
- * A cena: ilha de grama cercada de agua, vista de cima (3/4), no palco logico 1340x800
- * de um tablet deitado. A camera comeca em tamanho nativo (1:1) e recua com uma
- * transicao suave quando a aldeia cresce, ate mostrar a ilha inteira (0,5x).
+ * A cena: uma ilha pequena, vista de cima, onde um nucleo evolui por estagios (ver stages.js).
+ * Camera fixa no palco 1340x800 de um tablet deitado, em tamanho nativo (1:1).
  */
 
-export const STAGE_W = 1340;
-export const STAGE_H = 800;
-const ZOOMS = [1, 0.5];
+export { STAGE_W, STAGE_H };
 const FOAM_FPS = 6;
-const TREE_FPS = 6;
-const BUILD_MS = 3200;           // quanto leva uma obra (o aldeao martela enquanto isso)
-const DOOR = { x: CENTER.x, y: CENTER.y + 55 + 30 };
+const BUILD_MS = 3200;       // quanto leva a chegada de um elemento novo (o aldeao martela enquanto isso)
 
-// Qual sprite desenha cada tipo de predio. [sprite, cor, escala]
-const LOOK = {
-  centro: ['Castle', 'Blue', 1], castelo: ['Castle', 'Red', 1.08], maravilha: ['Castle', 'Yellow', 1.32],
-  mosteiro: ['Monastery', 'Blue', 1], catedral: ['Monastery', 'Purple', 1.18],
-  quartel: ['Barracks', 'Blue', 1], torre: ['Tower', 'Blue', 1],
-  ferraria: ['House1', 'Black', 1], mercado: ['House3', 'Yellow', 1], universidade: ['House2', 'Purple', 1],
-  serraria: ['House2', 'Blue', 1],
-};
-const HOUSES = ['House1', 'House3', 'House2'];
-
-export function createScene(canvas, content) {
+export function createScene(canvas) {
   const ctx = canvas.getContext('2d');
   canvas.width = STAGE_W; canvas.height = STAGE_H;
-  const placed = layoutAll(content.plan);
+  ctx.imageSmoothingEnabled = false;
+
   const trees = treeField();
-  let built = {};
-  let units = {};
-  let focus = 'food';
-  let awake = false;
-  let vis = visible(placed, built);
-  const cam = { x: CENTER.x, y: CENTER.y, z: 1 };
-  let target = { ...cam };
-  let ground = null;
-  let t0 = performance.now();
-  let drawMs = 0;
-  let night = 1;
-  let first = true;
-  const rising = new Map();      // "id:k" -> instante em que a obra comecou
+  const aliveTrees = trees.filter(t => !t.stump);
+  const flags = { clouds: true, shadows: true };   // depuracao
+  const rising = new Map();      // id do elemento -> instante em que comecou a aparecer
   const navRef = { nav: null };
   const crowd = createCrowd(navRef);
   const puffs = [];
-  const aliveTrees = trees.filter(t => !t.stump);
-  const flags = { clouds: true, shadows: true, wall: true, decor: true };   // depuracao: liga/desliga camadas
-  const decor = decorField();
-  let decorShown = decor;
-  // nuvens: passam devagar sobre o mapa (x em px do mundo)
-  const clouds = [0, 1, 2, 3, 4].map(i => ({ x: i * 640 - 300, y: 200 + ((i * 337) % 1100), v: 1 + (i * 3) % 8, speed: 14 + (i * 5) % 12 }));
-
-  // ---------- terreno pre-desenhado: agua (fundo) e terra (grama), com a espuma animada entre as duas ----------
-  let land = null;
+  const clouds = [0, 1, 2, 3].map(i => ({ x: i * 420 - 300, y: 120 + ((i * 331) % 560), v: 1 + (i * 3) % 8, speed: 12 + (i * 5) % 10 }));
   const edgeTiles = [];
+
+  let stage = 0;
+  let units = {};
+  let focus = 'food';
+  let awake = false;
+  let night = 1;
+  let first = true;
+  let ground = null, land = null;
+  let drawMs = 0;
+  const t0 = performance.now();
+  const api = { onStage: null };
+
+  // ---------- terreno pre-desenhado ----------
   function buildGround() {
-    const mk = () => { const g = document.createElement('canvas'); g.width = WORLD_W * TILE; g.height = WORLD_H * TILE; const c = g.getContext('2d'); c.imageSmoothingEnabled = false; return [g, c]; };
+    const mk = () => { const g = document.createElement('canvas'); g.width = 21 * TILE; g.height = 13 * TILE; const c = g.getContext('2d'); c.imageSmoothingEnabled = false; return [g, c]; };
     const [w, wc] = mk();
     wc.fillStyle = wc.createPattern(A.waterBg.img, 'repeat');
     wc.fillRect(0, 0, w.width, w.height);
@@ -74,218 +55,167 @@ export function createScene(canvas, content) {
         if (tx === ISLAND.x0 || tx === ISLAND.x1 || ty === ISLAND.y0 || ty === ISLAND.y1) edgeTiles.push([tx, ty]);
       }
     }
-    land = l;
-    return w;
+    ground = w; land = l;
   }
 
+  // ---------- navegacao ----------
+  const els = () => elementsAt(stage);
   function buildNav() {
-    const rects = vis.filter(b => FOOT[b.id]).map(b => { const [w, h] = FOOT[b.id]; return { x0: b.x - w / 2, x1: b.x + w / 2, y0: b.y - h, y1: b.y }; });
     navRef.nav = createNav({
-      width: WORLD_W * TILE, height: WORLD_H * TILE, rects, inflate: 4,
-      landRect: { x0: ISLAND.x0 * TILE + 24, y0: ISLAND.y0 * TILE + 24, x1: (ISLAND.x1 + 1) * TILE - 24, y1: (ISLAND.y1 + 1) * TILE - 24 },
+      width: STAGE_W, height: STAGE_H, rects: els().map(rectOf).filter(Boolean), inflate: 4,
+      landRect: { x0: LAND.x0 + 24, y0: LAND.y0 + 24, x1: LAND.x1 - 24, y1: LAND.y1 - 24 },
     });
   }
 
-  // ---------- camera ----------
-  function aim() {
-    const e = extent(vis);
-    const w = e.x1 - e.x0 + 140, h = e.y1 - e.y0 + 70;
-    const z = ZOOMS.find(k => w * k <= STAGE_W && h * k <= STAGE_H) ?? ZOOMS[ZOOMS.length - 1];
-    if (z === 1) target = { x: (e.x0 + e.x1) / 2, y: (e.y0 + e.y1) / 2 + 30, z };
-    else target = { x: WORLD_W * TILE / 2, y: WORLD_H * TILE / 2, z };
-  }
+  const progress = e => {
+    const s = rising.get(e.id);
+    return s === undefined ? 1 : Math.min(1, (performance.now() - s) / BUILD_MS);
+  };
 
-  // ---------- desenho de entidades ----------
+  // ---------- desenho dos elementos ----------
   const items = [];
   const push = (y, fn) => items.push({ y, fn });
 
-  function progress(b) {
-    const t0 = rising.get(`${b.id}:${b.k}`);
-    return t0 === undefined ? 1 : Math.min(1, (performance.now() - t0) / BUILD_MS);
-  }
-
-  function drawBuilding(b, t) {
-    const [kind, color, sc] = b.id === 'casa' ? [HOUSES[b.k % 3], 'Blue', 1] : (LOOK[b.id] || ['House1', 'Blue', 1]);
-    const s = A[`${kind}_${color}`];
-    if (!s) return;
-    const w = s.fw * sc, h = s.fh * sc;
-    const p = progress(b, t);
-    // sombra no chao: ancora o predio no terreno
-    const sw = (FOOT[b.id] ? FOOT[b.id][0] : w * 0.6) * 1.35;
-    if (flags.shadows) {
-      ctx.globalAlpha = 0.32 * Math.min(1, p * 2);
-      ctx.drawImage(A.shadow.img, b.x - sw / 2, b.y - sw * 0.27, sw, sw * 0.5);
-    }
+  function shadow(x, y, w, p) {
+    if (!flags.shadows) return;
+    ctx.globalAlpha = 0.32 * Math.min(1, p * 2);
+    ctx.drawImage(A.shadow.img, x - w / 2, y - w * 0.27, w, w * 0.5);
     ctx.globalAlpha = 1;
-    if (p >= 1) { ctx.drawImage(s.img, b.x - w / 2, b.y - h + 6, w, h); }
-    else {
-      // obra: a construcao "sobe" do chao, de baixo para cima
-      const e = 1 - Math.pow(1 - p, 2), cut = Math.floor(s.fh * (1 - e));
-      if (s.fh - cut > 0) ctx.drawImage(s.img, 0, cut, s.fw, s.fh - cut, b.x - w / 2, b.y - h + 6 + cut * sc, w, (s.fh - cut) * sc);
+  }
+
+  function drawSprite(e) {
+    const s = A[`${e.sprite}_${e.color}`], sc = e.scale || 1;
+    const w = s.fw * sc, h = s.fh * sc, p = progress(e), r = rectOf(e);
+    shadow(e.x, e.y, (r ? r.x1 - r.x0 : w * 0.6) * 1.35, p);
+    if (p >= 1) { ctx.drawImage(s.img, e.x - w / 2, e.y - h + 6, w, h); return; }
+    // chegada: o elemento "sobe" do chao, de baixo para cima
+    const k = 1 - Math.pow(1 - p, 2), cut = Math.floor(s.fh * (1 - k));
+    if (s.fh - cut > 0) ctx.drawImage(s.img, 0, cut, s.fw, s.fh - cut, e.x - w / 2, e.y - h + 6 + cut * sc, w, (s.fh - cut) * sc);
+  }
+
+  function drawElement(e, t) {
+    switch (e.kind) {
+      case 'fogueira': {
+        ctx.drawImage(A.woodRes.img, e.x - 44, e.y - 26);
+        ctx.drawImage(A.woodRes.img, e.x + 8, e.y - 20);
+        const f = A.fire3, i = Math.floor(t * 10) % f.n;
+        ctx.drawImage(f.img, i * f.fw, 0, f.fw, f.fh, e.x - 48, e.y - 96, f.fw * 1.5, f.fh * 1.5);
+        break;
+      }
+      case 'pasto': {
+        frame(ctx, A.bush2, t * 6, e.x - 72, e.y - 124);
+        frame(ctx, A.sheepGrass, t * 8, e.x - 78, e.y - 108);
+        frame(ctx, A.sheepGrass, t * 8 + 5, e.x - 12, e.y - 100, true);
+        break;
+      }
+      case 'ouro': {
+        [[-50, 8, 4], [38, -4, 2], [-4, 32, 6]].forEach(([dx, dy, n]) => ctx.drawImage(A['gold' + n].img, e.x + dx - 64, e.y + dy - 118));
+        break;
+      }
+      case 'braseiro': frame(ctx, A.fire2, t * 10, e.x - 32, e.y - 218); break;
+      default: drawSprite(e);
     }
-    if (b.id === 'ferraria') frame(ctx, A.fire2, t * 10, b.x + 18, b.y - 78);
   }
 
-  function drawExtras(b, t) {
-    if (b.id === 'serraria') {
-      ctx.drawImage(A.woodRes.img, b.x + 38, b.y - 30);
-      ctx.drawImage(A.woodRes.img, b.x + 54, b.y - 20);
-      ctx.drawImage(A.stump1.img, b.x - 120, b.y - 120, 96, 128);
-    }
-  }
-
-  function drawFarm(b, t) {
-    // pasto: arbustos e duas ovelhas pastando
-    const s = A['bush' + (1 + b.k % 4)];
-    frame(ctx, s, t * 6 + b.k, b.x - 64, b.y - 118);
-    frame(ctx, A.sheepGrass, t * 8 + b.k * 3, b.x - 70, b.y - 104);
-    frame(ctx, A.sheepGrass, t * 8 + b.k * 5 + 4, b.x - 16, b.y - 96, true);
-  }
-
-  function drawMine(b) {
-    const offs = [[-46, 6, 4], [40, -4, 2], [-2, 30, 6]];
-    offs.forEach(([dx, dy, type], i) => {
-      const s = A['gold' + (1 + ((type + b.k) % 6))];
-      ctx.drawImage(s.img, b.x + dx - 64, b.y + dy - 118);
-    });
-  }
-
-  // muralha: torreoes pequenos e escuros ao longo do anel (o tileset de rampa nao tem relevo e virava placa)
-  function drawWall(b) {
-    const s = A.Tower_Black, sc = 0.6, w = s.fw * sc, h = s.fh * sc;
-    ctx.globalAlpha = 0.3;
-    ctx.drawImage(A.shadow.img, b.x - 40, b.y - 14, 80, 36);
-    ctx.globalAlpha = 1;
-    ctx.drawImage(s.img, b.x - w / 2, b.y - h + 4, w, h);
-  }
-
-  function drawDecor(d, t) {
-    if (d.kind === 'bush') frame(ctx, A['bush' + (1 + d.v)], t * 5 + d.v * 2 + d.x, d.x - 64, d.y - 100);
-    else ctx.drawImage(A['rock' + (1 + d.v)].img, d.x - 32, d.y - 52);
-  }
-
+  // ---------- simulacao (aldeoes, obras, noite) ----------
   function tick(dt) {
-    // habitantes: o que existe agora no mapa e o que ha para fazer
     night += ((awake ? 0 : 1) - night) * Math.min(1, dt * 1.5);
-    const posts = id => vis.filter(b => id.includes(b.id));
-    const sites = [];
-    for (const b of vis) { if (progress(b) < 1) sites.push(b); }
-    for (const [key, t0] of rising) { if (performance.now() - t0 >= BUILD_MS) rising.delete(key); }
+    const live = els();
+    const pos = ids => live.filter(e => ids.includes(e.id)).map(e => ({ x: e.x, y: e.y }));
+    const sites = live.filter(e => progress(e) < 1);
+    for (const [id, s] of rising) if (performance.now() - s >= BUILD_MS) rising.delete(id);
+    // pontos de ronda espalhados diante do castelo (um so ponto amontoava todo mundo na porta)
+    const center = [{ x: 560, y: 520 }, { x: 790, y: 520 }, { x: 672, y: 545 }, { x: 600, y: 470 }, { x: 750, y: 470 }];
     crowd.update(dt, {
-      awake, focus, door: DOOR, sites,
-      trees: aliveTrees, mines: posts(['mina']), pastures: posts(['fazenda']), sawmills: posts(['serraria']),
-      soldierPosts: [...posts(['quartel', 'torre']), { x: CENTER.x, y: CENTER.y + 100 }],
-      monkPosts: [...posts(['mosteiro', 'catedral']), { x: CENTER.x - 60, y: CENTER.y + 110 }],
+      awake, focus, door: depositAt(stage), sites,
+      trees: aliveTrees, mines: pos(['ouro']), pastures: pos(['pasto']), sawmills: [],
+      soldierPosts: [...pos(['quartel', 'castelo', 'castelo_ouro', 'torre1', 'torre2', 'torre3']), ...center],
+      monkPosts: [...pos(['mosteiro', 'catedral']), ...center],
     });
-    for (const b of sites) if (Math.random() < dt * 9) puffs.push({ x: b.x + (Math.random() - 0.5) * 90, y: b.y - 8, age: 0 });
-
+    for (const e of sites) if (Math.random() < dt * 9) puffs.push({ x: e.x + (Math.random() - 0.5) * 90, y: e.y - 8, age: 0 });
+    for (let i = puffs.length - 1; i >= 0; i--) { puffs[i].age += dt; if (puffs[i].age > 0.8) puffs.splice(i, 1); }
   }
 
   function drawScene(now) {
     const t = (now - t0) / 1000;
-    // camera: aproxima do alvo (suave)
-    const k = 1 - Math.exp(-3.2 * Math.min(0.1, (drawScene.dt || 0.016)));
-    cam.x += (target.x - cam.x) * k; cam.y += (target.y - cam.y) * k; cam.z += (target.z - cam.z) * k;
-    if (Math.abs(target.z - cam.z) < 0.002) cam.z = target.z;
-
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.fillStyle = '#4a93a6';
-    ctx.fillRect(0, 0, STAGE_W, STAGE_H);
-    const z = cam.z;
-    ctx.setTransform(z, 0, 0, z, STAGE_W / 2 - cam.x * z, STAGE_H / 2 - cam.y * z);
-    ctx.imageSmoothingEnabled = z !== 1;
-    ctx.imageSmoothingQuality = 'high';
-
-    // agua, espuma animada (um quadro de 192x192 centrado em cada tile da borda) e a terra por cima
     ctx.drawImage(ground, 0, 0);
-    const fr = t * FOAM_FPS;
-    for (const [tx, ty] of edgeTiles) frame(ctx, A.foam, fr + (tx * 3 + ty) * 0.35, tx * TILE + TILE / 2 - 96, ty * TILE + TILE / 2 - 96);
+    // espuma animada: um quadro de 192x192 centrado em cada tile da borda, por baixo da grama
+    for (const [tx, ty] of edgeTiles) frame(ctx, A.foam, t * FOAM_FPS + (tx * 3 + ty) * 0.35, tx * TILE + TILE / 2 - 96, ty * TILE + TILE / 2 - 96);
     ctx.drawImage(land, 0, 0);
-    // mar: pedras que balancam e o patinho de borracha
     for (const r of SEA_ROCKS) frame(ctx, A['waterRocks' + (1 + r.v)], t * 6 + r.v * 3, r.x - 32, r.y - 32);
     frame(ctx, A.duck, t * 3, DUCK.x - 16, DUCK.y - 16 + Math.sin(t * 1.8) * 2.5);
 
-    const dt = Math.min(0.1, drawScene.dt || 0.016);
-    tick(dt);
-
     items.length = 0;
-    // unidades crescem ate 35% quando a camera esta longe: legibilidade a 0,5x
-    crowd.drawables(ctx, push, 1 + (1 - cam.z) * 0.7);
-    if (flags.decor) for (const d of decorShown) push(d.y, () => drawDecor(d, t));
+    crowd.drawables(ctx, push, 1);
     for (const tr of trees) {
       push(tr.y, () => {
         if (tr.stump) { const s = A['stump' + (1 + tr.type % 4)]; ctx.drawImage(s.img, tr.x - 96, tr.y - 232); return; }
         const s = A['tree' + tr.type];
-        frame(ctx, s, fr + tr.phase, tr.x - 96, tr.y - s.fh + 14);
+        frame(ctx, s, t * 6 + tr.phase, tr.x - 96, tr.y - s.fh + 14);
       });
     }
-    for (const b of vis) {
-      if (b.id === 'muralha') { if (flags.wall) push(b.y, () => drawWall(b)); }
-      else if (b.id === 'mina') push(b.y, () => drawMine(b));
-      else if (b.id === 'fazenda') push(b.y - 40, () => drawFarm(b, t));
-      else push(b.y, () => { drawBuilding(b, t); drawExtras(b, t); });
-    }
+    for (const e of els()) push(e.y, () => drawElement(e, t));
     items.sort((a, b) => a.y - b.y);
     for (const it of items) it.fn();
-    for (let i = puffs.length - 1; i >= 0; i--) {
-      const q = puffs[i];
-      q.age += dt;
-      if (q.age > 0.8) { puffs.splice(i, 1); continue; }
-      frame(ctx, A.dust1, q.age * 10, q.x - 32, q.y - 48);
-    }
 
-    // nuvens: translucidas, derivam para a direita e reaparecem do outro lado
-    ctx.globalAlpha = 0.5;
-    for (const c of (flags.clouds ? clouds : [])) {
-      c.x += c.speed * dt;
-      if (c.x > WORLD_W * TILE + 300) c.x = -700;
-      const s = A['cloud' + c.v];
-      ctx.drawImage(s.img, c.x, c.y);
-    }
-    ctx.globalAlpha = 1;
+    for (const q of puffs) frame(ctx, A.dust1, q.age * 10, q.x - 32, q.y - 48);
 
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    // nuvens: translucidas, derivam para a direita
+    if (flags.clouds) {
+      ctx.globalAlpha = 0.5;
+      for (const c of clouds) ctx.drawImage(A['cloud' + c.v].img, c.x, c.y);
+      ctx.globalAlpha = 1;
+    }
     if (night > 0.01) { ctx.fillStyle = `rgba(14,20,56,${0.42 * night})`; ctx.fillRect(0, 0, STAGE_W, STAGE_H); }
   }
 
-  ground = buildGround();
-  aim();
+  buildGround();
   buildNav();
-  cam.x = target.x; cam.y = target.y; cam.z = target.z;
 
-  let raf = 0, last = performance.now();
+  let last = performance.now();
   function loop(now) {
-    raf = requestAnimationFrame(loop);
-    drawScene.dt = (now - last) / 1000; last = now;
-    const m0 = performance.now();
+    requestAnimationFrame(loop);
+    const dt = Math.min(0.1, (now - last) / 1000);
+    last = now;
+    const m = performance.now();
+    tick(dt);
+    for (const c of clouds) { c.x += c.speed * dt; if (c.x > STAGE_W + 300) c.x = -700; }
     drawScene(now);
-    drawMs += (performance.now() - m0 - drawMs) * 0.1;
+    drawMs += (performance.now() - m - drawMs) * 0.1;
   }
-  raf = requestAnimationFrame(loop);
+  requestAnimationFrame(loop);
 
-  return {
+  // getters precisam ser copiados como getters (Object.assign congelaria o valor da criacao)
+  const methods = {
+    /** view = { summary: { level, ... }, units, focus } vindo do servidor. */
     update(view) {
       focus = view.focus || focus;
       units = view.units || units;
-      const nb = view.built || {};
-      if (JSON.stringify(nb) !== JSON.stringify(built)) {
-        const now = performance.now();
-        if (!first) for (const [id, n] of Object.entries(nb)) for (let k = built[id] || 0; k < n; k++) rising.set(`${id}:${k}`, now);
-        built = { ...nb }; vis = visible(placed, built); decorShown = decor.filter(p => !underBuilding(p, vis)); aim(); buildNav();
+      const next = stageFor(view.summary?.level ?? 0);
+      if (next !== stage) {
+        const before = new Set(els().map(e => e.id));
+        const prev = stage;
+        stage = next;
+        // so anima a chegada se nao for o carregamento inicial
+        if (!first) {
+          const now = performance.now();
+          for (const e of els()) if (!before.has(e.id)) rising.set(e.id, now);
+          api.onStage?.(stage, STAGE_NAMES[stage], prev);
+        }
+        buildNav();
       }
-      crowd.sync(units, DOOR);
+      crowd.sync(units, depositAt(stage), crowdCaps(stage));
       first = false;
     },
     setAwake(v) { awake = v; },
-    bench(n = 60) { const s0 = performance.now(); for (let i = 0; i < n; i++) drawScene(s0 + i * 33); return (performance.now() - s0) / n; },
-    get info() { return { folks: crowd.count(), rising: rising.size, night, zoom: cam.z, target: target.z, buildings: vis.length, drawMs: Math.round(drawMs * 100) / 100 }; },
-    drawNow() { drawScene(performance.now()); },
-    /** Salta a camera direto para o enquadramento alvo (testes). */
-    /** Aponta a camera para (x, y) com zoom z, sem animar (inspecao de detalhes). */
+    get stage() { return stage; },
     flags,
-    lookAt(x, y, z = 1) { target = { x, y, z }; cam.x = x; cam.y = y; cam.z = z; },
-    snapCamera() { cam.x = target.x; cam.y = target.y; cam.z = target.z; },
-    /** Avanca `sec` segundos de simulacao sem desenhar (testes e demonstracoes). */
-    advance(sec, step = 0.05) { for (let t = 0; t < sec; t += step) tick(step); },
+    advance(sec, step = 0.05) { for (let s = 0; s < sec; s += step) { tick(step); for (const c of clouds) c.x += c.speed * step; } },
+    drawNow() { drawScene(performance.now()); },
+    bench(n = 60) { const s0 = performance.now(); for (let i = 0; i < n; i++) drawScene(s0 + i * 33); return (performance.now() - s0) / n; },
+    get info() { return { stage, name: STAGE_NAMES[stage], folks: crowd.count(), rising: rising.size, night, drawMs: Math.round(drawMs * 100) / 100 }; },
   };
+  Object.defineProperties(api, Object.getOwnPropertyDescriptors(methods));
+  return api;
 }

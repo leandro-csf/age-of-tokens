@@ -12,46 +12,47 @@
 </head>
 <body>
 <div id="stage">
-  <canvas id="world" role="img" aria-label="Vista da aldeia, com prédios e aldeões trabalhando"></canvas>
+  <canvas id="world" role="img" aria-label="Sua aldeia, que evolui conforme você usa o Claude"></canvas>
 
-  <!-- topo: era, recursos, estado -->
+  <!-- sempre visivel: era, nivel e recursos -->
   <div class="hud ribbon" id="era-ribbon" data-skin="ribbon-blue"><span id="era">Age of Tokens</span></div>
   <p class="hud shadow" id="era-next">&nbsp;</p>
 
-  <div class="hud paper" id="res-bar" data-skin="paper" aria-label="Recursos">
-    <div class="chip" data-res="food"><img class="ic" data-icon="Icon_04" alt="Comida"><b id="v-food">0</b></div>
-    <div class="chip" data-res="wood"><img class="ic" data-icon="Icon_02" alt="Madeira"><b id="v-wood">0</b></div>
-    <div class="chip" data-res="stone"><img class="ic" data-rock alt="Pedra"><b id="v-stone">0</b></div>
-    <div class="chip" data-res="gold"><img class="ic" data-icon="Icon_03" alt="Ouro"><b id="v-gold">0</b></div>
-  </div>
-
-  <div class="hud paper" id="status" data-skin="paper"><i class="dot"></i><span id="status-text">Conectando</span></div>
-
-  <!-- base: nível, tokens, aldeia -->
   <div class="hud wood" id="level-box" data-skin="wood">
     <span class="lvl-lbl">Nível</span><b id="level">0</b>
     <div class="bar" id="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"><i id="bar-fill"></i></div>
     <small id="bar-note">&nbsp;</small>
   </div>
 
-  <div class="hud paper" id="tok-bar" data-skin="paper" aria-label="Tokens gastos">
-    <div class="tk"><small>Saída</small><b id="t-output">0</b></div>
-    <div class="tk"><small>Cache lido</small><b id="t-cacheRead">0</b></div>
-    <div class="tk"><small>Entrada + cache</small><b id="t-in">0</b></div>
-    <div class="tk"><small>Pensamento</small><b id="t-thinking">0</b></div>
+  <button class="hud paper" id="res-bar" data-skin="paper" type="button" aria-label="Recursos (toque para ver detalhes)" aria-expanded="false">
+    <span class="chip" data-res="food"><img class="ic" data-icon="Icon_04" alt="Comida"><b id="v-food">0</b></span>
+    <span class="chip" data-res="wood"><img class="ic" data-icon="Icon_02" alt="Madeira"><b id="v-wood">0</b></span>
+    <span class="chip" data-res="stone"><img class="ic" data-rock alt="Pedra"><b id="v-stone">0</b></span>
+    <span class="chip" data-res="gold"><img class="ic" data-icon="Icon_03" alt="Ouro"><b id="v-gold">0</b></span>
+  </button>
+
+  <!-- ao tocar na barra de recursos -->
+  <div class="hud paper" id="details" data-skin="paper" hidden aria-label="Detalhes">
+    <h2>Tokens gastos</h2>
+    <div class="grid">
+      <div><small>Saída</small><b id="t-output">0</b></div>
+      <div><small>Cache lido</small><b id="t-cacheRead">0</b></div>
+      <div><small>Entrada + cache</small><b id="t-in">0</b></div>
+      <div><small>Pensamento</small><b id="t-thinking">0</b></div>
+    </div>
+    <h2>Aldeia</h2>
+    <div class="grid">
+      <div><small>Pop.</small><b id="s-pop">0/0</b></div>
+      <div><small>Prédios</small><b id="s-build">0</b></div>
+      <div><small>Pesq.</small><b id="s-tech">0</b></div>
+      <div><small>Obra</small><b id="s-work">0</b></div>
+    </div>
   </div>
 
-  <div class="hud paper" id="stats-bar" data-skin="paper" aria-label="Aldeia">
-    <div class="st"><small>Pop.</small><b id="s-pop">0/0</b></div>
-    <div class="st"><small>Prédios</small><b id="s-build">0</b></div>
-    <div class="st"><small>Pesq.</small><b id="s-tech">0</b></div>
-    <div class="st"><small>Obra</small><b id="s-work">0</b></div>
-  </div>
+  <!-- aviso curto, so para marcos -->
+  <div class="hud slate quiet" id="toast" data-skin="slate" aria-live="polite"><ol id="log"></ol></div>
 
-  <div class="hud slate" id="log-box" data-skin="slate" aria-label="Crônica">
-    <h2>Crônica</h2>
-    <ol id="log"><li class="empty">A aldeia aguarda o primeiro sinal.</li></ol>
-  </div>
+  <div class="hud paper" id="conn" data-skin="paper" hidden><span>Sem sinal do servidor</span></div>
 </div>
 
 <div id="missing" hidden>
