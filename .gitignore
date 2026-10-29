@@ -1,2 +1,4 @@
 node_modules/
 data/
+# Tiny Swords: licenca proibe redistribuir os arquivos (ver docs/ASSETS.md)
+web/assets/

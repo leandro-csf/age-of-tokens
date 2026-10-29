@@ -33,3 +33,12 @@
 - A arte e minha primeira passada: vale revisar com o olho do usuario (cores, proporcoes, muralhas, aldeoes).
 - Sem som e sem toque na cena (por decisao: o jogo nao tem input).
 - Prestigio (nova aldeia em outro bioma) ainda sem visual.
+
+## M4b: refazer a aldeia com Tiny Swords (em andamento)
+- [x] Pacote escolhido, baixado (fora do git), inventariado e conferido visualmente: peao com cortar/minerar/construir e cargas, predios, arvores, ouro, ovelhas, terreno, agua com espuma, efeitos e UI.
+- [ ] Decidir mapeamento dos 14 predios do jogo para os 8 do pacote (faltam fazenda, serraria, mina, mercado, ferraria, universidade, catedral, muralha, maravilha) e a escala de exibicao.
+- [ ] Carregador de sprite sheets + sistema de animacao por quadros.
+- [ ] Mundo visto de cima: ilha de grama com agua e espuma, predios, arvores, minas de ouro, ovelhas.
+- [ ] Ciclo de coleta: peao vai ao recurso, trabalha, volta carregando e deposita.
+- [ ] Unidades militares (guerreiro, arqueiro, lanceiro, monge) e efeitos (poeira, fogo).
+- [ ] HUD e molduras com a interface do pacote (faixas, mesa de madeira, botoes, barras).

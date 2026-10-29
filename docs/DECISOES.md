@@ -65,3 +65,9 @@
 - Predio novo sobe do chao em 1,5 s com poeira. De noite a cena escurece com transicao suave, janelas acendem e aldeoes/monges dormem onde estao; so a guarda patrulha, mais devagar. Fumaca na ferraria e em parte das casas quando acordada.
 - Desempenho medido: ~0,5 ms/quadro com 52 predios e ~1 ms com 87 predios e 60 figuras, a 30 fps.
 - Bugs achados na verificacao visual: o terreno era pre-desenhado do tamanho da tela e cortava a ilha quando a camera passeava (agora cobre a ilha inteira); redimensionar o canvas o limpava ate o proximo quadro (agora redesenha na hora).
+
+## 2026-10-29 (arte: Tiny Swords)
+- O usuario achou o visual isometrico gerado por codigo muito longe do Age of Empires e pediu arte de verdade. Pesquisa de pacotes livres: nenhum cobre isometrico + aldeoes animados + predios + recursos; os melhores pagos nao tem unidades. Escolha do usuario: **Tiny Swords (Free Pack)**, de Pixel Frog.
+- Consequencia assumida: o mapa deixa de ser isometrico e passa a ser **visto de cima (3/4)**, estilo RTS cartunesco (mais Warcraft que Age of Empires). Em troca vem o ciclo de coleta de verdade: peao corta, minera, constroi, carrega madeira/ouro/carne.
+- Os arquivos NAO entram no git (a licenca proibe redistribuir): `web/assets/` esta no `.gitignore` e `docs/ASSETS.md` explica como obter de novo e traz o inventario de tamanhos de quadro. Baixado da pagina oficial, zip integro, sem executaveis; so o Free Pack (o Enemy Pack pago nao foi pego).
+- O mapa isometrico atual (`web/village/art.js`, `village.js`) fica no historico do git e sera substituido quando o novo estiver funcionando.
