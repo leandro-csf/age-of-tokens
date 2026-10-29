@@ -7,7 +7,7 @@
 ## Proximo
 - [x] Decidido: aldeia comeca do zero (baseline `now`); historico existente nao conta.
 - [x] Regras v1 em docs/REGRAS.md; progressao revisada para curva fixa e comparavel (niveis geometricos + eras + prestigio).
-- [ ] Preencher o que REGRAS.md deixa em aberto: predios/unidades/techs por era e minimos por era.
+- [x] Conteudo por era em docs/CONTEUDO.md (predios, unidades, techs, custos, requisitos de avanco).
 - [ ] Implementar o motor de simulacao (modulo puro, testavel) lendo os eventos da ingestao.
 - [ ] Detectar fim de sessao / sessao ativa (liveness do session manager ainda nao portado) para aldeoes animados.
 - [ ] Modelo de save do jogo (separado do save da ingestao) e como a ingestao alimenta a simulacao.

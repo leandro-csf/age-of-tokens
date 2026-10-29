@@ -25,3 +25,9 @@
 - Revisao: o usuario apontou que desenvolvedores gastam bem mais tokens e que o valor esta em comparar aldeias entre jogadores. Decisao: curva FIXA, sem auto-calibrar nem perfil. Substitui os limiares 10k/100k/400k e o "Imperial em ~1 mes".
 - Metrica: renda acumulada vitalicia R; nivel n com L(n)=5000x1,25^n; eras nos niveis 10/20/30 (~47k / ~433k / ~4M). Prestigio nao zera R.
 - Pesos mantidos; UI mostra tokens crus ao lado da renda.
+
+## 2026-10-29 (conteudo por era)
+- Limiares de era confirmados pelo usuario (nivel 10/20/30, L(n)=5000x1,25^n).
+- Conteudo por era em docs/CONTEUDO.md. Custos escalam por fator de era (x1/x9/x85/x800) para o conteudo custar ~75% da renda da era.
+- Techs dao +5% de producao por recurso por era (max +20%); arvore e ordem de compra identicas para todos, preservando a comparabilidade.
+- Unidades militares so decoram e contam para populacao (por ora). Maravilha no Imperial libera o prestigio.
