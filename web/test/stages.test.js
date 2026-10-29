@@ -71,7 +71,7 @@ test('multidao so cresce e nunca passa dos limites', () => {
 
 test('arvores na borda da ilha, deterministicas', () => {
   const t = treeField();
-  assert.ok(t.length > 30 && t.length < 120, 'quantidade ' + t.length);
+  assert.ok(t.length >= 15 && t.length <= 70, 'quantidade ' + t.length);   // rala de proposito
   assert.deepEqual(treeField(), t);
   for (const a of t) assert.ok(a.x > LAND.x0 && a.x < LAND.x1 && a.y > LAND.y0 && a.y < LAND.y1 + TILE);
 });
@@ -84,7 +84,7 @@ test('autotile da grama', () => {
 });
 
 test('a ilha cabe no palco 1340x800', () => {
-  assert.ok(LAND.x1 < STAGE_W && LAND.y1 < STAGE_H);
+  assert.ok(LAND.x1 < STAGE_W && LAND.y1 <= STAGE_H);
 });
 
 test('em todo estagio, todo elemento e alcancavel a pe a partir do deposito', () => {
@@ -101,7 +101,7 @@ test('em todo estagio, todo elemento e alcancavel a pe a partir do deposito', ()
       assert.ok(p.length >= 1, `${e.id} inalcancavel no estagio ${s}`);
     }
     // e a borda da floresta
-    for (const [x, y] of [[LAND.x0 + 70, 400], [LAND.x1 - 70, 400], [672, LAND.y0 + 70], [672, LAND.y1 - 50]]) {
+    for (const [x, y] of [[LAND.x0 + 70, 420], [LAND.x1 - 70, 420], [672, LAND.y0 + 70], [672, LAND.y1 - 50]]) {
       assert.ok(nav.find(d.x, d.y, x, y).length >= 1, `borda ${x},${y} inalcancavel no estagio ${s}`);
     }
   }

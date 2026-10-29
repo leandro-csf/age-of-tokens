@@ -125,7 +125,7 @@ export function createScene(canvas) {
     const sites = live.filter(e => progress(e) < 1);
     for (const [id, s] of rising) if (performance.now() - s >= BUILD_MS) rising.delete(id);
     // pontos de ronda espalhados diante do castelo (um so ponto amontoava todo mundo na porta)
-    const center = [{ x: 560, y: 520 }, { x: 790, y: 520 }, { x: 672, y: 545 }, { x: 600, y: 470 }, { x: 750, y: 470 }];
+    const center = [{ x: 560, y: 550 }, { x: 790, y: 550 }, { x: 672, y: 575 }, { x: 600, y: 500 }, { x: 750, y: 500 }];
     crowd.update(dt, {
       awake, focus, door: depositAt(stage), sites,
       trees: aliveTrees, mines: pos(['ouro']), pastures: pos(['pasto']), sawmills: [],

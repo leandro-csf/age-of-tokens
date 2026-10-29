@@ -106,3 +106,9 @@
 - Consequencia assumida: o decisor continua gastando recurso em predios que a tela nao mostra; os numeros de recurso oscilam por causa disso. Os avisos "Construida: Casa" etc. foram removidos (nao correspondem a nada visivel).
 - Bugs achados na verificacao: floresta de 256 px de altura escondia as casas da fileira da frente (tirei as arvores do meio da borda de baixo); `Object.assign` congelava os getters `info`/`stage` da cena; seletor `#conn` por id vencia `[hidden]`.
 - Estagio 10 ("Maravilha") ainda e modesto visualmente (castelo dourado + catedral + braseiros): vale um efeito maior.
+
+## 2026-10-29 (mapa maior e mais limpo)
+- Pedido do usuario: mapa um pouco maior e menos vegetacao.
+- Ilha de 15x9 para 17x10 tiles (LAND 128..1216 x 128..768 no palco 1340x800); elementos abertos 12% na horizontal em torno do centro e 30 px mais baixos (mais respiro entre os predios; testes de sobreposicao e alcancabilidade continuam passando).
+- Floresta bem mais rala: so a faixa da borda, com ~48% de chance por tile (antes 82%), a 2a faixa so de vez em quando nas laterais (14%) e nada no meio da borda de baixo. Sao ~25-40 arvores em vez de ~70. Pedras do mar reposicionadas para fora da ilha nova.
+- Nota de verificacao: o painel do navegador embutido as vezes recorta a captura em vez de reduzir; emular uma janela 800x478 faz o palco escalar (k=0,597) e a captura mostrar tudo.

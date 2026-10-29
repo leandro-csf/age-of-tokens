@@ -9,8 +9,8 @@
 export const TILE = 64;
 export const STAGE_W = 1340;
 export const STAGE_H = 800;
-export const ISLAND = { x0: 3, y0: 2, x1: 17, y1: 10 };                 // tiles de grama, inclusive
-export const LAND = { x0: 3 * TILE, y0: 2 * TILE, x1: 18 * TILE, y1: 11 * TILE };
+export const ISLAND = { x0: 2, y0: 2, x1: 18, y1: 11 };                 // tiles de grama, inclusive (17 x 10)
+export const LAND = { x0: 2 * TILE, y0: 2 * TILE, x1: 19 * TILE, y1: 12 * TILE };
 export const CENTER = { x: 672, y: 420 };
 
 export const LEVEL_MIN = [0, 3, 6, 10, 14, 18, 20, 24, 28, 30, 35];
@@ -62,6 +62,10 @@ export function footOf(e) {
   return key ? FOOT[key] : null;
 }
 
+// a ilha cresceu: abre 12% na horizontal em torno do centro e desce 30 px (as coordenadas acima sao o desenho base)
+const SPREAD = 1.12, DROP = 30;
+for (const e of ELEMENTS) { e.x = Math.round(672 + (e.x - 672) * SPREAD); e.y += DROP; }
+
 export const elementsAt = stage => ELEMENTS.filter(e => e.from <= stage && (e.until === undefined || stage < e.until));
 export const rectOf = e => { const f = footOf(e); return f && { x0: e.x - f[0] / 2, x1: e.x + f[0] / 2, y0: e.y - f[1], y1: e.y }; };
 
@@ -76,7 +80,7 @@ export const CROWD = {
 export const crowdCaps = stage => Object.fromEntries(Object.entries(CROWD).map(([k, v]) => [k, v[stage]]));
 
 /** Onde os aldeoes depositam a carga: perto da fogueira ate o castelo, depois na porta dele. */
-export const depositAt = stage => (stage < 6 ? { x: 672, y: 515 } : { x: 672, y: 405 });
+export const depositAt = stage => (stage < 6 ? { x: 672, y: 515 + 30 } : { x: 672, y: 405 + 30 });
 
 // ---------- arvores: faixa de 2 tiles na borda da ilha ----------
 export const hash = (a, b = 0) => { let h = (a * 374761393 + b * 668265263) | 0; h = (h ^ (h >>> 13)) * 1274126177; return (h ^ (h >>> 16)) >>> 0; };
@@ -88,11 +92,9 @@ export function treeField() {
       const dl = tx - ISLAND.x0, dr = ISLAND.x1 - tx, dt = ty - ISLAND.y0, db = ISLAND.y1 - ty;
       const rim = Math.min(dl, dr, dt, db);
       if (rim > 1) continue;
-      // 1a faixa (a borda): densa. 2a faixa: so nas laterais (mais rala) e no topo (bem rala).
-      // Embaixo nao ha 2a faixa: e la que ficam as casas.
-      let chance = rim === 0 ? 82 : (Math.min(dl, dr) === 1 ? 45 : dt === 1 ? 28 : 0);
-      if (rim === 1 && db === 1) chance = 0;
-      // pinheiros tem 256 px de altura e escondem o que estiver atras: o meio da borda de baixo fica livre
+      // so a faixa da borda, rala; a 2a faixa so aparece de vez em quando nas laterais.
+      // Pinheiros tem 256 px de altura e escondem o que estiver atras: o meio da borda de baixo fica livre.
+      let chance = rim === 0 ? 48 : (Math.min(dl, dr) === 1 ? 14 : 0);
       if (db === 0 && dl > 3 && dr > 3) chance = 0;
       const h = hash(tx + 7, ty + 13);
       if (h % 100 >= chance) continue;
@@ -112,7 +114,7 @@ export function grassTile(tx, ty) {
 
 // ---------- mar ----------
 export const SEA_ROCKS = [
-  { x: 90, y: 230, v: 0 }, { x: 110, y: 590, v: 1 }, { x: 1240, y: 270, v: 2 },
-  { x: 1250, y: 620, v: 3 }, { x: 520, y: 765, v: 1 }, { x: 930, y: 60, v: 2 },
+  { x: 70, y: 240, v: 0 }, { x: 80, y: 610, v: 1 }, { x: 1262, y: 290, v: 2 },
+  { x: 1272, y: 640, v: 3 }, { x: 380, y: 788, v: 1 }, { x: 930, y: 60, v: 2 },
 ];
-export const DUCK = { x: 70, y: 410 };
+export const DUCK = { x: 60, y: 430 };
