@@ -53,7 +53,7 @@ Precisa de [Node.js](https://nodejs.org) 20 ou mais novo (desenvolvido no Node 2
 **1. Baixe o projeto**
 
 ```bash
-git clone https://github.com/SEU-USUARIO/age-of-tokens.git
+git clone https://github.com/leandro-csf/age-of-tokens.git
 cd age-of-tokens
 ```
 
@@ -144,6 +144,10 @@ Cobrem a ingestão, o motor (incluindo uma jornada completa até a lenda), o ser
 - Ainda não há ranking nem "hall da fama" das aldeias lendárias; a comparação é por conversa e pelo cartão de compartilhar.
 - O bônus de lenda não tem teto: depois de várias lendas o jogo acelera sem limite.
 - Em caso de queda do computador, perdem-se no máximo uns 5 segundos de progresso.
+
+## Licença
+
+O **código** é livre sob a licença [MIT](LICENSE). Ela **não cobre a arte**: os sprites do Tiny Swords pertencem a Pixel Frog e seguem a licença do pacote (uso pessoal e comercial permitido; proibido redistribuir). As imagens em `docs/img/` mostram o jogo em funcionamento e contêm esses sprites, apenas para ilustrar; não as reutilize como arte. As fontes seguem a SIL OFL 1.1.
 
 ## Créditos
 
