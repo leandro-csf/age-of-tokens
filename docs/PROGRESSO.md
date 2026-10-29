@@ -1,9 +1,11 @@
 # Progresso
 
 ## Feito
-- [x] Fase 0: estrutura, docs, `ingest/` com parsers copiados (line, cost, todo) e teste do acumulador passando (5 testes).
+- [x] Fase 0: estrutura, docs, parsers copiados (line, cost, todo).
+- [x] Ingestao: `ingest/src/services/{tailer,ingest,state}.js` + `src/cli.js`. Eventos: session:new, subagent:new, tokens, tool. Offsets e ids persistidos em save atomico. 14 testes passando (`npm test` em `ingest/`). Validado so-leitura no historico real.
 
-## Próximo
-- [ ] Decidir ingestão (ver STACK.md) e portar tailer/discovery.
-- [ ] Definir modelo de save e checkpoint.
-- [ ] Rascunho das regras da aldeia (recursos, eras, decisor).
+## Proximo
+- [ ] Decidir: o historico existente credita a aldeia (baseline `history`) ou comeca do zero (`now`)?
+- [ ] Rascunho das regras da aldeia: pesos por tipo de token (cache read domina ~200x), recursos, eras, decisor.
+- [ ] Detectar fim de sessao / sessao ativa (liveness do session manager ainda nao portado) para aldeoes animados.
+- [ ] Modelo de save do jogo (separado do save da ingestao) e como a ingestao alimenta a simulacao.
