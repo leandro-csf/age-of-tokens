@@ -1,7 +1,7 @@
-import fs from 'node:fs';
 import { createIngest } from '../../ingest/src/services/ingest.js';
-import { emptyState, saveState } from '../../ingest/src/services/state.js';
+import { emptyState } from '../../ingest/src/services/state.js';
 import { newState, applyEvent, step, summary } from '../../sim/src/index.js';
+import { createStore, STATE_VERSION, StaleWriterError, RegressionError } from './store.js';
 
 /*
  * Junta ingestao + motor + save. Nao tem timers: quem chama decide quando
@@ -14,21 +14,13 @@ import { newState, applyEvent, step, summary } from '../../sim/src/index.js';
  * coerentes: nada e contado duas vezes nem se perde numa queda.
  */
 
-const SAVE_VERSION = 1;
-
-export function loadSave(file) {
-  try {
-    const j = JSON.parse(fs.readFileSync(file, 'utf8'));
-    if (j?.version === SAVE_VERSION && j.sim && j.ingest) return j;
-  } catch { /* sem save ou corrompido: comeca do zero */ }
-  return null;
-}
-
-export function createGame({ projectsDir, saveFile, baseline = 'now' }) {
-  const saved = loadSave(saveFile);
+export function createGame({ projectsDir, saveFile, baseline = 'now', store = createStore(saveFile) }) {
+  // Lanca NewerVersionError se o save e de uma versao mais nova (nada e sobrescrito).
+  const saved = store.load();
   const ingestState = saved ? { ...emptyState(), ...saved.ingest } : emptyState();
   let sim = saved?.sim ?? newState();
   let dirty = false;
+  let halted = null;           // motivo, se uma trava de seguranca parou as gravacoes
   const listeners = new Set();
 
   function emit(type, data) {
@@ -83,13 +75,25 @@ export function createGame({ projectsDir, saveFile, baseline = 'now' }) {
       return r.action;
     },
 
-    /** Grava o save se algo mudou. Devolve true se gravou. */
+    /**
+     * Grava o save se algo mudou. Devolve true se gravou.
+     * Se uma trava de seguranca recusar (outro processo gravou depois, ou a renda do disco e maior),
+     * as gravacoes PARAM (o jogo segue servindo) e o erro e lancado uma vez.
+     */
     save() {
-      if (!dirty) return false;
-      saveState(saveFile, { version: SAVE_VERSION, savedAt: Date.now(), ingest: ingestState, sim });
+      if (!dirty || halted) return false;
+      try {
+        store.save({ version: STATE_VERSION, ingest: ingestState, sim });
+      } catch (err) {
+        if (err instanceof StaleWriterError || err instanceof RegressionError) halted = err.message;
+        throw err;
+      }
       dirty = false;
       return true;
     },
+
+    /** Situacao do armazenamento (como carregou, numero de gravacao, se parou). */
+    saveInfo: () => ({ ...store.report, seq: store.seq, halted }),
 
     view,
     snapshot: () => ({ ...view(), state: sim }),

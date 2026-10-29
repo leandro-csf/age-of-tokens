@@ -17,7 +17,11 @@ Precisa do Node 20+ e **não tem dependências para instalar**. O terminal mostr
   no tablet (mesma rede): http://192.168.1.6:4100   [Ethernet]
 ```
 
-Abra o endereço da rede no tablet (mesmo Wi-Fi). O progresso é salvo em `data/save.json`.
+Abra o endereço da rede no tablet (mesmo Wi-Fi).
+
+**Onde fica o progresso:** `data/save.json`, protegido por checksum. Ao lado ficam `save.json.prev` (o save anterior), `backups/` (1 por hora nas últimas 24 h e 1 por dia na última semana) e `server.lock` (só um servidor por vez). Se o arquivo principal estragar, o jogo recupera sozinho do `.prev` ou do backup mais novo e avisa no terminal. Para guardar uma cópia fora do computador, copie a pasta `data/backups/` para a nuvem.
+
+Se aparecer "já existe um servidor rodando", é porque o jogo já está aberto em outra janela: use esse, ou feche-o antes.
 
 > **Atenção:** o servidor escuta em toda a rede local de propósito. A API é só leitura, mas qualquer aparelho na sua rede vê os seus totais de tokens. Para fechar de volta: `HOST=127.0.0.1 npm start`. Se o tablet não conectar, libere a porta 4100 no firewall do Windows.
 

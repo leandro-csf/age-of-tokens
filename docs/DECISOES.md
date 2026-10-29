@@ -131,3 +131,16 @@
 - Testes de regressao (5): primeiro valor aparece sem nenhum quadro; valor novo chega so pela rede de seguranca; a rede de seguranca nao atrapalha a animacao quando ha quadros; animacao termina no alvo; varios contadores.
 - service worker: VERSION v1 -> v2 (descarta a casca antiga com o contador defeituoso) e inclui `ui/counters.js` e `ui/format.js`.
 - SQLite NAO era a correcao deste incidente: o armazenamento em arquivo ja sobrevive a queda do processo. Fica como opcao de robustez, nao de urgencia.
+
+## 2026-10-29 (robustez do save, sem SQLite)
+- Decisao do usuario: continuar com arquivo JSON, sem SQLite. Para um estado de ~65 KB, arquivo + gravacao atomica + backups da a mesma durabilidade; SQLite so compensaria se um dia quisermos historico consultavel (grafico por dia, ranking), e entao troca-se so `server/src/store.js`.
+- Novo `server/src/store.js` (substitui `loadSave` e `saveState` no servidor):
+  - ENVELOPE `{ format: 2, seq, savedAt, checksum, payload }` com SHA-256 do conteudo: detecta truncado/alterado. Saves do formato antigo (sem envelope) sao lidos e migrados; o original e copiado para `save.json.pre-upgrade.bak` antes da primeira regravacao.
+  - MIGRACAO por cadeia (`MIGRATIONS[n]` leva v n para n+1). Hoje so existe a v1 (cadeia vazia, testada com migracoes de mentira). Save de versao (ou formato) MAIS NOVO: lanca `NewerVersionError`, o servidor nao sobe e o arquivo nao e tocado; nunca cai para um backup mais velho. Antes, um save de outra versao era descartado em silencio.
+  - RECUPERACAO em cascata: `save.json` -> `save.json.prev` -> backups mais novos primeiro. Se nada serve, os arquivos vao para `data/corrupt-<data>/` (nao se apaga nada) e comeca-se um jogo novo com aviso. A origem usada aparece no console e em `/api/health` (`save.status`: new | ok | upgraded | recovered | unrecoverable).
+  - GRAVACAO atomica com fsync (tmp + rename) e `.prev` = ultimo save bom.
+  - BACKUPS em `data/backups/save-AAAAMMDD-HHMM.json`: 1 por hora, mantendo 24 h inteiras + 1 por dia nos dias seguintes ate 8 dias.
+  - TRAVAS de gravacao: recusa se o numero de gravacao do disco e MAIOR que o deste processo (`StaleWriterError`: outro servidor gravou depois) ou se a renda vitalicia do disco e maior (`RegressionError`: ela nunca diminui). Ao disparar, as gravacoes PARAM (o jogo segue no ar), com aviso alto no console e `ok:false` no health.
+  - INSTANCIA UNICA: `data/server.lock` (PID + porta). Segundo servidor na mesma pasta e recusado com mensagem clara; trava de processo morto e assumida sozinha; `release` so apaga a trava propria.
+- Verificacao com processos reais, em copia do save: migracao do formato antigo, segundo servidor recusado, regravacao no formato novo com .prev e backup, arquivo truncado + queda forcada -> reinicio assumiu a trava velha e recuperou do .prev com aviso. Depois aplicado ao save real (renda 9.398, atualizado para o envelope).
+- Perda maxima numa queda: ate ~5 s (intervalo de gravacao). Nao cobre disco com defeito nem pasta `data/` apagada: para isso, copiar `data/backups/` para outra pasta/nuvem (nao automatizado).

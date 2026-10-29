@@ -31,5 +31,6 @@ Jogo idle estilo Age of Empires: uma aldeia global evolui sozinha (sem decisão 
 - `web/ui/`: `skins.js` (paineis 9-fatias), `format.js` (numeros em portugues), `card.js` (cartao PNG de compartilhar).
 - `web/sw.js` + `web/manifest.webmanifest` + `web/icons/` (icones PROPRIOS gerados por `scripts/make-icons.mjs`, nunca derivados do Tiny Swords) + `web/fonts/` (woff2 OFL + licencas): PWA e modo offline. `server/src/net.js` lista os enderecos de rede.
 - `README.md` na raiz explica como rodar e usar no tablet.
-- `data/`: save do jogo (`save.json`), fora do git.
+- `server/src/store.js`: armazenamento do save (envelope+checksum, migracoes, recuperacao, backups, travas, instancia unica). Para mudar o formato do motor, incremente `STATE_VERSION` e acrescente a migracao em `MIGRATIONS`: nunca descarte saves.
+- `data/`: save do jogo (`save.json`, `.prev`, `backups/`, `server.lock`) (`save.json`), fora do git.
 - `docs/`: conceito, decisões, progresso, stack.

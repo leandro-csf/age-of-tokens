@@ -65,7 +65,7 @@ export function createHttp(game, { webDir = path.resolve('web') } = {}) {
     let pathname;
     try { pathname = new URL(req.url, 'http://x').pathname; } catch { return sendJson(res, 400, { error: 'url invalida' }); }
 
-    if (pathname === '/api/health') return sendJson(res, 200, { ok: true });
+    if (pathname === '/api/health') return sendJson(res, 200, { ok: !game.saveInfo?.().halted, save: game.saveInfo?.() });
     if (pathname === '/api/state') return sendJson(res, 200, game.snapshot());
     if (pathname === '/api/content') return sendJson(res, 200, CONTENT);
 

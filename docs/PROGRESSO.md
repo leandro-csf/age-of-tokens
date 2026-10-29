@@ -80,7 +80,7 @@
 
 ## 2026-10-29: pos-M5
 - [x] Incidente "numeros a zero" resolvido (contadores dependiam do requestAnimationFrame). 100 testes.
-- [ ] Robustez do save: migracao entre versoes, backup rotativo, trava de instancia unica (evita dois servidores gravando o mesmo save). SQLite (`node:sqlite`, ja vem no Node 24) so se o usuario quiser.
+- [x] Robustez do save (sem SQLite): envelope+checksum, migracao, recuperacao em cascata, backups rotativos, travas de regressao/escritor atrasado, instancia unica. 123 testes.
 - [ ] Prestigio.
 - [ ] Acabamento da arte (Maravilha, acampamento).
 - [ ] Abrir sozinho com o Windows.

@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { createGame, loadSave } from '../src/game.js';
+import { createGame } from '../src/game.js';
+import { NewerVersionError } from '../src/store.js';
 
 function setup() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'aot-srv-'));
@@ -90,15 +91,24 @@ test('eventos que chegam com o servidor desligado entram na proxima subida', asy
   assert.equal(game.view().raw.output, 3000);
 });
 
-test('save corrompido ou de outra versao e ignorado', () => {
+test('save corrompido: o arquivo e guardado de lado e o jogo comeca novo (nao quebra)', () => {
   const t = setup();
   fs.mkdirSync(path.dirname(t.saveFile), { recursive: true });
   fs.writeFileSync(t.saveFile, '{nao e json');
-  assert.equal(loadSave(t.saveFile), null);
-  fs.writeFileSync(t.saveFile, JSON.stringify({ version: 99, sim: {}, ingest: {} }));
-  assert.equal(loadSave(t.saveFile), null);
   const game = createGame({ projectsDir: t.projects, saveFile: t.saveFile });
+  const info = game.saveInfo();
+  assert.equal(info.status, 'unrecoverable');
+  assert.ok(fs.existsSync(path.join(info.quarantine, 'save.json')), 'o corrompido deve ser guardado, nao apagado');
   assert.equal(game.view().summary.era, 'Era das Trevas');
+});
+
+test('save de versao FUTURA: recusa em vez de sobrescrever o progresso', () => {
+  const t = setup();
+  fs.mkdirSync(path.dirname(t.saveFile), { recursive: true });
+  const original = JSON.stringify({ version: 99, sim: { earned: { food: 1e9 } }, ingest: {} });
+  fs.writeFileSync(t.saveFile, original);
+  assert.throws(() => createGame({ projectsDir: t.projects, saveFile: t.saveFile }), NewerVersionError);
+  assert.equal(fs.readFileSync(t.saveFile, 'utf8'), original, 'o arquivo nao pode ser alterado');
 });
 
 test('ouvinte que lanca erro nao derruba o jogo', async () => {
