@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Age of Tokens - sprites (dev)</title>
+  <style>
+    body { margin: 0; padding: 12px; background: #14110d; color: #efe4c8; font: 13px ui-monospace, monospace; }
+    h2 { margin: 14px 0 6px; font-size: 13px; color: #e8a93c; }
+    .row { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-end; }
+    figure { margin: 0; text-align: center; }
+    canvas { image-rendering: pixelated; background: #27402e; display: block; }
+  </style>
+</head>
+<body>
+  <h2>dia</h2><div class="row" id="day"></div>
+  <h2>noite (janelas acesas)</h2><div class="row" id="night"></div>
+  <h2>chao e decoracao</h2><div class="row" id="decor"></div>
+  <script type="module">
+    import { getSprite, BUILDING_IDS } from './village/art.js';
+    const S = 4;
+    function show(root, id, opts) {
+      const s = getSprite(id, opts);
+      const cv = document.createElement('canvas');
+      cv.width = s.w; cv.height = s.h;
+      cv.style.width = s.w * S + 'px'; cv.style.height = s.h * S + 'px';
+      cv.getContext('2d').drawImage(s.cv, 0, 0);
+      const f = document.createElement('figure');
+      f.append(cv, Object.assign(document.createElement('figcaption'), { textContent: id + (opts?.variant ? ' v' + opts.variant : '') }));
+      root.append(f);
+    }
+    for (const id of BUILDING_IDS) show(day, id, {});
+    show(day, 'casa', { variant: 1 }); show(day, 'casa', { variant: 2 });
+    for (const id of BUILDING_IDS) show(night, id, { lit: true });
+    for (const id of ['grassA', 'grassB', 'street', 'pine', 'oak', 'bush']) show(decor, id, {});
+  </script>
+</body>
+</html>

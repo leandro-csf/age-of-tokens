@@ -56,3 +56,12 @@
 - Cronica agrega rajadas de tokens em uma linha (1,5 s) para nao inundar. Numeros rolam ate o valor novo (rAF) e respeitam prefers-reduced-motion.
 - Servidor ganhou `/api/content` (nomes id->nome, eras, constantes de nivel, total de techs) e `SAVE_FILE` para apontar um save alternativo (usado para demonstracao).
 - Verificado no navegador embutido em 375x812 com um save de demonstracao e eventos injetados: layout cabe, sem erros no console, modo dia e noite. Nao testado em celular real nem em Safari/Firefox.
+
+## 2026-10-29 (M4: aldeia isometrica)
+- Canvas 2D em resolucao logica baixa com zoom INTEIRO (4x/3x/2x/1x) para o pixel ficar nitido; a camera recua um degrau quando a ilha nao cabe. Se a ilha e ate 1,7x mais larga que a tela, fica no zoom maior e a camera passeia de lado a lado (periodo de 55 s) em vez de encolher tudo.
+- Tile 12x6 (2:1). Mapa em quarteiroes de 2x2 celulas separados por ruas de 1 celula; centro urbano no quarteirao (0,0). Cada predio tem lote FIXO e deterministico (o n-esimo de cada tipo cai sempre no mesmo lugar, sem depender da ordem de construcao do decisor); predios 2x2 (castelo, catedral, Maravilha) ocupam um quarteirao inteiro. O servidor expoe a ordem canonica em `/api/content.plan`, e `/api/state` e o evento `state` agora trazem `built` e `units`.
+- Arte toda gerada por codigo (nenhum arquivo de imagem): caixa isometrica com telhado em empena, contorno escuro de 1px, janelas que acendem a noite. Ilha como "fatia de terra" com laterais de terra. Arvores e arbustos ocupam so celulas livres e somem quando chega um predio.
+- Aldeoes: BFS nas ruas, velocidade por tipo, sprites procedurais (aldeao, soldado, arqueiro, cavaleiro, monge); aldeoes vao ao predio do recurso em foco (fazenda, serraria, mina) e martelam ao chegar. Maquinas de cerco (trebuchet, canhao) ficam "dentro do castelo", sem sprite. Mostra so uma amostra (30/10/10/6/4 por tipo), porque a ilha e pequena.
+- Predio novo sobe do chao em 1,5 s com poeira. De noite a cena escurece com transicao suave, janelas acendem e aldeoes/monges dormem onde estao; so a guarda patrulha, mais devagar. Fumaca na ferraria e em parte das casas quando acordada.
+- Desempenho medido: ~0,5 ms/quadro com 52 predios e ~1 ms com 87 predios e 60 figuras, a 30 fps.
+- Bugs achados na verificacao visual: o terreno era pre-desenhado do tamanho da tela e cortava a ilha quando a camera passeava (agora cobre a ilha inteira); redimensionar o canvas o limpava ate o proximo quadro (agora redesenha na hora).

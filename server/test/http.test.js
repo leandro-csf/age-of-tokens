@@ -56,6 +56,11 @@ test('/api/content traz nomes, eras e constantes de nivel', async () => {
     assert.equal(c.level.ratio, 1.25);
     assert.equal(c.eras.length, 4);
     assert.equal(c.totalTechs, 16);
+    assert.equal(c.plan.length, 4);
+    assert.equal(c.plan.flat().reduce((n, b) => n + b.count, 0), 86);
+    const st = JSON.parse((await get(s.base + '/api/state')).body);
+    assert.deepEqual(st.built, {});
+    assert.equal(st.units.aldeao, 3);
     assert.equal(c.eras[0].nextAtLevel, 10);
     assert.equal(c.eras[3].nextAtLevel, null);
     assert.equal(c.names.casa, 'Casa');

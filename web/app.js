@@ -1,4 +1,5 @@
 import { sprite, skyline } from './pixel.js';
+import { createVillage } from './village/village.js';
 
 const $ = id => document.getElementById(id);
 const nf = new Intl.NumberFormat('pt-BR');
@@ -7,6 +8,7 @@ const ACTING_MS = 10_000;  // fazendo obra/treino recentemente conta como acorda
 const LOG_MAX = 60;
 
 let content = null;
+let village = null;
 let view = null;
 let night = null;
 let connected = false;
@@ -84,6 +86,8 @@ function render() {
   setTarget('t-cacheRead', view.raw.cacheRead);
   setTarget('t-in', view.raw.input + view.raw.cacheCreation);
   setTarget('t-thinking', view.raw.thinking);
+
+  village?.update(view);
 }
 
 function renderStatus() {
@@ -93,6 +97,8 @@ function renderStatus() {
   hero.classList.toggle('offline', !connected);
   hero.classList.toggle('awake', awake);
   $('status-text').textContent = !connected ? 'Sem sinal do servidor' : awake ? 'A aldeia trabalha' : 'A aldeia dorme';
+
+  village?.setAwake(awake);
 
   const wantNight = !awake;
   if (wantNight !== night) {
@@ -180,6 +186,8 @@ async function start() {
     $('status-text').textContent = 'Sem sinal do servidor';
     return setTimeout(start, 3000);
   }
+  village = createVillage($('village'), content);
+  window.__village = village; // depuracao no console
   requestAnimationFrame(tick);
   setInterval(renderStatus, 2000);
   connect();

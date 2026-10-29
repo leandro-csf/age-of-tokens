@@ -119,6 +119,16 @@ h2 {
   letter-spacing: .02em;
 }
 
+/* ---------- cena da aldeia (canvas) ---------- */
+.scene {
+  position: relative; height: 320px; padding: 0; overflow: hidden;
+  background: #1b2e22;
+}
+.scene canvas {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  image-rendering: pixelated; display: block;
+}
+
 /* ---------- nivel ---------- */
 .level-head { display: flex; align-items: baseline; gap: 10px; }
 .lbl { font-family: var(--display); font-size: 24px; color: var(--amber); }

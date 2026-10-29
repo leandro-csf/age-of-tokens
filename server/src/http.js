@@ -8,6 +8,8 @@ const CONTENT = {
   level: { base: LEVEL_BASE, ratio: LEVEL_RATIO },
   eras: ERAS.map(e => ({ id: e.id, name: e.name, nextAtLevel: e.advance?.minLevel ?? null })),
   totalTechs: ERAS.reduce((n, e) => n + e.techs.length, 0),
+  // ordem canonica dos predios por era: define o lote de cada um no mapa (web/village/layout.js)
+  plan: ERAS.map(e => e.buildings.map(b => ({ id: b.id, count: b.count }))),
   names: Object.fromEntries(
     ERAS.flatMap(e => [...e.buildings, ...e.units, ...e.techs]).map(i => [i.id, i.name])
       .concat(ERAS.map(e => [e.id, e.name])),

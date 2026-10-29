@@ -45,6 +45,8 @@ export function createGame({ projectsDir, saveFile, baseline = 'now' }) {
       focus: sim.focus,
       work: sim.work,
       techs: sim.techs.length,
+      built: sim.built,   // predios por id (a tela desenha a aldeia com isso)
+      units: sim.units,   // unidades por id
       tick: sim.tick,
     };
   }

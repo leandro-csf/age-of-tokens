@@ -5,6 +5,6 @@
   "type": "module",
   "scripts": {
     "start": "node server/src/index.js",
-    "test": "node --test \"ingest/test/*.test.js\" \"sim/test/*.test.js\" \"server/test/*.test.js\""
+    "test": "node --test \"ingest/test/*.test.js\" \"sim/test/*.test.js\" \"server/test/*.test.js\" \"web/test/*.test.js\""
   }
 }

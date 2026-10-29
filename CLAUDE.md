@@ -24,6 +24,7 @@ Jogo idle estilo Age of Empires: uma aldeia global evolui sozinha (sem decisão 
 - `ingest/`: parsers e acumulador de tokens copiados do session manager (`npm test` em `ingest/`).
 - `sim/`: motor de simulação puro (sem I/O): estado, eventos da ingestão, decisor, níveis/eras. Fonte da verdade dos números: `sim/src/rules.js` e `sim/src/content.js` (`npm test` em `sim/`).
 - `server/`: junta ingestão + motor + save (`game.js`, sem timers) e expõe HTTP/SSE (`http.js`); `index.js` liga os timers. `npm start` na raiz sobe em http://127.0.0.1:4100. `npm test` na raiz roda tudo.
-- `web/`: front em HTML/CSS/JS puro (sem build): `index.html`, `style.css`, `app.js` (SSE de /api/stream), `pixel.js` (sprites 10x10 e paisagem geradas em SVG).
+- `web/`: front em HTML/CSS/JS puro (sem build): `index.html`, `style.css`, `app.js` (SSE de /api/stream), `pixel.js` (sprites 10x10 de interface e paisagem do topo, em SVG).
+- `web/village/`: a aldeia isometrica em canvas. `layout.js` (planta urbana, pura e testada em `web/test/`), `art.js` (sprites de predios/arvores/chao gerados por codigo), `village.js` (camera, terreno, aldeoes, obras, noite). `web/dev-sprites.html` e a pagina de preview da arte; no console, `window.__village` (`info`, `bench(n)`, `update`, `setAwake`) e `?rise=ms` alongam a animacao de obra.
 - `data/`: save do jogo (`save.json`), fora do git.
 - `docs/`: conceito, decisões, progresso, stack.

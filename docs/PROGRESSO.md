@@ -15,7 +15,7 @@
 - [x] M1 Motor: `sim/` puro e testavel (estoque, decisor, niveis/eras, custos). 29 testes, incluindo jornada completa ate a Maravilha e teste de orcamento por era.
 - [x] M2 Servidor local: `server/` junta ingestao + motor + save; `npm start` sobe em http://127.0.0.1:4100; /api/state e /api/stream (SSE). 54 testes no total (`npm test` na raiz). Validado ao vivo.
 - [x] M3 Primeira versao rodavel: `web/` em portrait (recursos, nivel/era com barra, aldeia, tokens crus, cronica). `npm start` e abrir http://127.0.0.1:4100. Verificado em 375x812.
-- [ ] M4 Aldeia visual: canvas isometrico pixel art com aldeoes e predios animados.
+- [x] M4 Aldeia visual: `web/village/` (canvas isometrico pixel art, 14 tipos de predio + centro urbano, aldeoes com caminho nas ruas, obras que sobem, dia/noite, camera com zoom inteiro). 62 testes (7 novos, do layout). Verificado em 375x812.
 - [ ] M5 PWA no celular: acesso pela rede local, instalavel, cartao exportavel.
 
 ## Pendencias herdadas do M1
@@ -27,3 +27,9 @@
 - Vendorizar as fontes (Jacquard 12, Pixelify Sans, Silkscreen) para funcionar offline: entra no M5.
 - Testar em celular real e em outros navegadores.
 - A aldeia ainda nao e desenhada: so contadores. O canvas isometrico e o M4.
+
+## Pendencias herdadas do M4
+- Verificado so no navegador embutido e com `requestAnimationFrame` limitado (painel em segundo plano); ver em celular real e em Safari/Firefox, incluindo a fluidez a 30 fps.
+- A arte e minha primeira passada: vale revisar com o olho do usuario (cores, proporcoes, muralhas, aldeoes).
+- Sem som e sem toque na cena (por decisao: o jogo nao tem input).
+- Prestigio (nova aldeia em outro bioma) ainda sem visual.
