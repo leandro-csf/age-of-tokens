@@ -1,6 +1,6 @@
 import { loadAssets } from './world/assets.js';
 import { createScene } from './world/scene.js';
-import { loadSkins, paintAll } from './ui/skins.js';
+import { loadSkins, paintAll, paint } from './ui/skins.js';
 import { compact } from './ui/format.js';
 import { createCounters } from './ui/counters.js';
 import { cardLines, makeCard, shareOrDownload } from './ui/card.js';
@@ -197,6 +197,11 @@ async function start() {
   scene.onStage = (stage, name) => toast('Icon_06', `Sua aldeia evoluiu: ${name}`, 'big');
   scene.onPrestige = n => {
     toast('Icon_06', `Sua aldeia virou lenda (×${n})!`, 'big');
+    const b = $('banner');
+    $('banner-text').textContent = `Lenda ×${n}`;
+    b.hidden = false; paint(b, 'ribbon-yellow');
+    b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
+    setTimeout(() => { b.hidden = true; }, 5600);
     const stage = $('stage');
     stage.classList.remove('flash'); void stage.offsetWidth; stage.classList.add('flash');
   };

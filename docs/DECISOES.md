@@ -154,3 +154,11 @@
 - Cartao: o subtitulo ganha "Lenda xN" e a renda mostrada e a vitalicia.
 - Verificado: 14 testes novos no motor (gatilho, o que zera e o que fica, renda vitalicia monotona, nivel da aldeia atual nao libera eras, bonus nos tokens e no saque, aldeia seguinte mais rapida, step faz o prestigio primeiro, pureza), jornada completa ate a lenda, 4 testes de migracao v1->v2 e de copias; e ao vivo no navegador com um save "lendario": o decisor virou a lenda sozinho com a pagina aberta (Maravilha/nivel 40 -> Acampamento/nivel 0, outro bioma, vitalicia 38 mi preservada, aviso e flash).
 - Limites: a cerimonia e simples (flash + aviso), sem animacao propria; o bioma 5 (verde-azulado) tem pouco contraste com o mar; nao ha "hall da fama" das aldeias lendarias; o bonus nao tem teto (a partir de varios prestigios o jogo acelera sem limite).
+
+## 2026-10-29 — Acabamento da arte
+- Novo `web/world/effects.js` (puro, testado em `web/test/effects.test.js`): ovelhas que passeiam pelo pasto (pastam, andam, viram o rosto), particulas (faiscas, explosao), vaga-lumes deterministicos.
+- Cena: brilho dourado pulsante sob o castelo (estagio 9; mais forte na Maravilha) e faiscas subindo; fumaca na fogueira do acampamento; vaga-lumes so de noite.
+- Cerimonia da lenda: retrato da aldeia antiga se desfaz em ~2,6 s sobre a nova, explosao de faiscas douradas e faixa amarela "Lenda xN" (`#banner`) alem do aviso e do flash.
+- Agua tingida por bioma (`TINT`); o bioma 5, de grama clara, ganhou agua bem mais escura para contrastar.
+- Verificado no navegador embutido (aura, faixa, fumaca, ovelhas); faiscas e retrato fantasma confirmados por contagem de pixels no canvas (o screenshot chega depois que somem).
+- Limite: as faiscas amarelas somem contra o castelo amarelo; nao ha tochas novas (os braseiros ja existentes cumprem esse papel).
