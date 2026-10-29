@@ -101,9 +101,9 @@ test('step nao altera o estado de entrada e conta ticks', () => {
   assert.equal(state.tick, 1);
 });
 
-test('canPrestige so depois da Maravilha', () => {
+test('canPrestige: so com a Maravilha E o nivel 40 (detalhes em prestige.test.js)', () => {
   assert.equal(canPrestige(newState()), false);
-  assert.equal(canPrestige({ ...newState(), wonder: true }), true);
+  assert.equal(canPrestige({ ...newState(), wonder: true }), false);
 });
 
 test('invariantes: estoque e populacao nunca ficam negativos nem passam do teto', () => {

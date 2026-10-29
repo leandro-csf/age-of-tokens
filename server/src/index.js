@@ -67,7 +67,9 @@ function describeSave(i) {
   const when = i.savedAt ? new Date(i.savedAt).toLocaleString('pt-BR') : '?';
   switch (i.status) {
     case 'ok': return `save: carregado (gravacao ${i.seq}, salvo em ${when}, renda ${Math.round(i.income)})`;
-    case 'upgraded': return `save: formato antigo atualizado (copia do original em ${path.basename(saveFile)}.pre-upgrade.bak)`;
+    case 'upgraded': return i.migratedFrom
+      ? `save: atualizado da versao ${i.migratedFrom} do jogo (copia do original em ${path.basename(saveFile)}.pre-migration-v${i.migratedFrom}.bak)`
+      : `save: formato antigo atualizado (copia do original em ${path.basename(saveFile)}.pre-upgrade.bak)`;
     case 'recovered': return `AVISO: o save principal nao serviu; recuperado de ${i.source} (gravacao ${i.seq}, renda ${Math.round(i.income)})`;
     case 'unrecoverable': return `AVISO: nenhum save utilizavel; os arquivos foram guardados em ${i.quarantine}. Comecando um jogo novo.`;
     default: return 'save: jogo novo';

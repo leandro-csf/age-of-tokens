@@ -4,12 +4,12 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {
-  createStore, acquireLock, interpret, migrate, backupsToKeep, incomeOf, FORMAT,
+  createStore, acquireLock, interpret, migrate, backupsToKeep, incomeOf, FORMAT, STATE_VERSION, MIGRATIONS,
   NewerVersionError, StaleWriterError, RegressionError, LockedError,
 } from '../src/store.js';
 
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'aot-store-'));
-const payload = (income = 100, extra = {}) => ({ version: 1, ingest: { files: {} }, sim: { earned: { food: income }, res: {} }, ...extra });
+const payload = (income = 100, extra = {}) => ({ version: STATE_VERSION, ingest: { files: {} }, sim: { earned: { food: income }, res: {} }, ...extra });
 const H = 3600e3;
 const clock = (start = new Date(2026, 9, 29, 12, 0).getTime()) => { let t = start; const f = () => t; f.advance = ms => { t += ms; }; return f; };
 
@@ -100,28 +100,28 @@ test('cadeia de migracoes v1 -> v2 -> v3, passo a passo', () => {
     1: p => { p.sim.earned.gold = 7; return p; },
     2: p => { p.novoCampo = 'v3'; return p; },
   };
-  const m = migrate(payload(10), 3, migrations);
+  const m = migrate(payload(10, { version: 1 }), 3, migrations);
   assert.equal(m.payload.version, 3);
   assert.equal(m.from, 1);
   assert.equal(m.payload.sim.earned.gold, 7);
   assert.equal(m.payload.novoCampo, 'v3');
-  assert.equal(payload(10).version, 1, 'nao altera o original');
+  assert.equal(payload(10).version, STATE_VERSION, 'nao altera o original');
 });
 
 test('migracao ausente: erro claro (nao inventa)', () => {
-  assert.throws(() => migrate(payload(), 3, { 1: p => p }), /sem migracao da versao 2/);
+  assert.throws(() => migrate(payload(1, { version: 1 }), 3, { 1: p => p }), /sem migracao da versao 2/);
 });
 
 test('o store carrega um save v1 num programa v2 usando a migracao', () => {
   const dir = tmp(), file = path.join(dir, 'save.json');
-  createStore(file).save(payload(321));
+  createStore(file, { stateVersion: 1 }).save(payload(321, { version: 1 }));
   const s = createStore(file, { stateVersion: 2, migrations: { 1: p => { p.migrado = true; return p; } } });
   const got = s.load();
   assert.equal(got.version, 2);
   assert.equal(got.migrado, true);
   assert.equal(s.report.migratedFrom, 1);
   assert.equal(s.report.status, 'upgraded');
-  assert.ok(fs.existsSync(file + '.pre-upgrade.bak'));
+  assert.ok(fs.existsSync(file + '.pre-migration-v1.bak'), 'cada migracao guarda a sua copia');
 });
 
 test('save de versao FUTURA: lanca erro, nao altera e nao cai para um backup mais velho', () => {
@@ -238,4 +238,43 @@ test('trava com o proprio PID (reinicio rapido) nao trava a si mesmo', () => {
   const lock = path.join(tmp(), 'server.lock');
   acquireLock(lock, { port: 1, pid: 111, isAlive: () => true });
   assert.doesNotThrow(() => acquireLock(lock, { port: 1, pid: 111, isAlive: () => true }));
+});
+
+// ---------- a migracao real v1 -> v2 (prestigio) ----------
+test('REAL: um save v1 (aldeia sem prestigio) migra para v2 sem perder nada', () => {
+  const dir = tmp(), file = path.join(dir, 'save.json');
+  const antigo = { version: 1, savedAt: 1, ingest: { files: { a: 1 } }, sim: { version: 1, era: 2, earned: { food: 5000, wood: 100 }, res: { food: 7 }, built: { casa: 3 }, raw: { output: 99 } } };
+  fs.writeFileSync(file, JSON.stringify(antigo));
+  const s = createStore(file);
+  const got = s.load();
+  assert.equal(got.version, 2);
+  assert.equal(got.sim.version, 2);
+  assert.equal(got.sim.prestige, 0);
+  assert.equal(got.sim.legacy, 0);
+  // tudo o que existia continua igual
+  assert.equal(got.sim.era, 2);
+  assert.deepEqual(got.sim.earned, { food: 5000, wood: 100 });
+  assert.deepEqual(got.sim.built, { casa: 3 });
+  assert.equal(got.sim.raw.output, 99);
+  assert.deepEqual(got.ingest, { files: { a: 1 } });
+  assert.deepEqual(JSON.parse(fs.readFileSync(file + '.pre-upgrade.bak', 'utf8')), antigo);
+});
+
+test('a migracao nao sobrescreve um prestigio ja existente', () => {
+  const p = { version: 1, sim: { prestige: 3, legacy: 1e6 } };
+  const m = MIGRATIONS[1](structuredClone(p));
+  assert.equal(m.sim.prestige, 3);
+  assert.equal(m.sim.legacy, 1e6);
+});
+
+test('duas atualizacoes seguidas guardam duas copias (formato antigo e migracao de versao)', () => {
+  const dir = tmp(), file = path.join(dir, 'save.json');
+  const antigo = { version: 1, savedAt: 1, ingest: {}, sim: { earned: { food: 10 } } };
+  fs.writeFileSync(file, JSON.stringify(antigo));
+  createStore(file, { stateVersion: 1 }).load();                       // 1a: formato antigo (sem envelope)
+  assert.ok(fs.existsSync(file + '.pre-upgrade.bak'));
+  const s1 = createStore(file, { stateVersion: 1 }); const p1 = s1.load(); s1.save(p1);   // vira envelope v1
+  const s2 = createStore(file, { stateVersion: 2, migrations: { 1: p => p } }); s2.load();  // 2a: migracao v1 -> v2
+  assert.ok(fs.existsSync(file + '.pre-migration-v1.bak'));
+  assert.deepEqual(JSON.parse(fs.readFileSync(file + '.pre-upgrade.bak', 'utf8')), antigo, 'a copia original nao foi sobrescrita');
 });

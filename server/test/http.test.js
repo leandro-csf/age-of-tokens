@@ -42,7 +42,7 @@ test('health, state e arquivos estaticos', async () => {
     assert.equal(h.save.status, 'new');   // jogo novo, nenhum save em disco ainda
     const st = JSON.parse((await get(s.base + '/api/state')).body);
     assert.equal(st.summary.era, 'Era das Trevas');
-    assert.equal(st.state.version, 1);
+    assert.equal(st.state.version, 2);
     const index = await get(s.base + '/');
     assert.equal(index.status, 200);
     assert.match(index.headers['content-type'], /text\/html/);

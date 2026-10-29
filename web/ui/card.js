@@ -13,9 +13,9 @@ export function cardLines({ view, stageName, date = new Date() }) {
   const s = view.summary;
   return {
     title: 'Age of Tokens',
-    subtitle: `${s.era} · Nível ${s.level} · ${stageName}`,
+    subtitle: `${s.era} · Nível ${s.level} · ${stageName}${s.prestige ? ` · Lenda ×${s.prestige}` : ''}`,
     tokens: `${compact(view.raw.output)} de saída · ${compact(view.raw.cacheRead)} de cache`,
-    income: `Renda vitalícia ${compact(s.income)}`,
+    income: `Renda vitalícia ${compact(s.lifetimeIncome ?? s.income)}`,
     date: date.toLocaleDateString('pt-BR'),
     filename: `aldeia-nivel-${s.level}.png`,
   };

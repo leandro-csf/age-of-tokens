@@ -44,7 +44,7 @@ function render() {
   $('era').textContent = s.era;
   const next = content.eras[s.eraIndex + 1];
   $('era-next').textContent = s.wonder
-    ? 'Maravilha erguida: a aldeia pode virar lenda'
+    ? `Maravilha erguida: vira lenda no nível ${content.prestige.level}`
     : next ? `Rumo à ${next.name} no nível ${content.eras[s.eraIndex].nextAtLevel}` : 'Erga a Maravilha para virar lenda';
 
   $('level').textContent = s.level;
@@ -62,6 +62,11 @@ function render() {
   $('s-build').textContent = nf.format(s.buildings);
   $('s-tech').textContent = `${view.techs}/${content.totalTechs}`;
   $('s-work').textContent = compact(view.work);
+  $('s-life').textContent = compact(s.lifetimeIncome ?? s.income);
+  $('s-bonus').textContent = `+${Math.round((s.prestigeBonus ?? 0) * 100)}%`;
+  const legend = $('legend');
+  legend.hidden = !s.prestige;
+  if (s.prestige) { $('legend-n').textContent = s.prestige; $('legend-bonus').textContent = `+${Math.round(s.prestigeBonus * 100)}% prod.`; }
   setTarget('t-output', view.raw.output);
   setTarget('t-cacheRead', view.raw.cacheRead);
   setTarget('t-in', view.raw.input + view.raw.cacheCreation);
@@ -155,6 +160,7 @@ function connect() {
   es.addEventListener('action', e => {
     const a = JSON.parse(e.data);
     lastAction = Date.now();
+    if (a.type === 'prestige') { /* a cena avisa pelo onPrestige, quando o estado novo chega */ }
     if (a.type === 'advance') {
       toast('Icon_06', `Nova era: ${content?.names?.[a.id] ?? a.id}`, 'big');
       const stage = $('stage');
@@ -175,7 +181,7 @@ async function start() {
   }
   document.querySelectorAll('img[data-icon]').forEach(el => { el.src = icon(el.dataset.icon); });
   document.querySelectorAll('img[data-rock]').forEach(el => { el.src = encodeURI('assets/tiny-swords/Tiny Swords (Free Pack)/Terrain/Decorations/Rocks/Rock1.png'); });
-  $('details').hidden = false; paintAll(); $('details').hidden = true;   // pinta tudo com tamanho real
+  $('details').hidden = false; $('legend').hidden = false; paintAll(); $('details').hidden = true; $('legend').hidden = true;   // pinta tudo com tamanho real
   $('toast').classList.add('quiet');
 
   try {
@@ -187,8 +193,13 @@ async function start() {
   setupFullscreen();
   // offline: so em contexto seguro (localhost ou HTTPS). Em http://192.168.x.x o navegador nao registra.
   if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('/sw.js').catch(err => console.warn('service worker:', err.message));
-  scene = createScene($('world'));
+  scene = createScene($('world'), { biomes: content.prestige.biomes });
   scene.onStage = (stage, name) => toast('Icon_06', `Sua aldeia evoluiu: ${name}`, 'big');
+  scene.onPrestige = n => {
+    toast('Icon_06', `Sua aldeia virou lenda (×${n})!`, 'big');
+    const stage = $('stage');
+    stage.classList.remove('flash'); void stage.offsetWidth; stage.classList.add('flash');
+  };
   window.__scene = scene; // depuracao no console
   requestAnimationFrame(tick);
   setInterval(renderStatus, 2000);

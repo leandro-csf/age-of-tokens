@@ -39,3 +39,11 @@ export const LOOT_PER_FACTOR = 10;
 
 // Participacao observada de cada recurso na renda (usada so para dimensionar custos).
 export const INCOME_SHARE = { food: 0.37, wood: 0.36, stone: 0.09, gold: 0.18 };
+
+// ---------- prestigio ----------
+// Ao erguer a Maravilha E chegar ao nivel da aldeia 40, a aldeia vira lenda: nasce outra, do zero,
+// com um bonus PERMANENTE de producao. O nivel e sempre o da aldeia ATUAL (a mesma escada 0-40 se
+// repete); a renda vitalicia (soma de todas as aldeias) segue crescendo para comparar jogadores.
+export const PRESTIGE_LEVEL = 40;
+export const PRESTIGE_BONUS = 0.10;   // +10% de producao por prestigio (aditivo)
+export const BIOMES = 5;              // 5 cores de grama no pacote de arte: bioma = prestigio mod 5

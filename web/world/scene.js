@@ -15,7 +15,7 @@ export { STAGE_W, STAGE_H };
 const FOAM_FPS = 6;
 const BUILD_MS = 3200;       // quanto leva a chegada de um elemento novo (o aldeao martela enquanto isso)
 
-export function createScene(canvas) {
+export function createScene(canvas, { biomes = 5 } = {}) {
   const ctx = canvas.getContext('2d');
   canvas.width = STAGE_W; canvas.height = STAGE_H;
   ctx.imageSmoothingEnabled = false;
@@ -31,6 +31,7 @@ export function createScene(canvas) {
   const edgeTiles = [];
 
   let stage = 0;
+  let prestige = 0;              // quantas aldeias ja viraram lenda (define o bioma)
   let units = {};
   let focus = 'food';
   let awake = false;
@@ -39,10 +40,12 @@ export function createScene(canvas) {
   let ground = null, land = null;
   let drawMs = 0;
   const t0 = performance.now();
-  const api = { onStage: null };
+  const api = { onStage: null, onPrestige: null };
 
   // ---------- terreno pre-desenhado ----------
   function buildGround() {
+    edgeTiles.length = 0;
+    const tiles = A['tilemap' + (1 + (prestige % biomes))].img;   // o bioma
     const mk = () => { const g = document.createElement('canvas'); g.width = 21 * TILE; g.height = 13 * TILE; const c = g.getContext('2d'); c.imageSmoothingEnabled = false; return [g, c]; };
     const [w, wc] = mk();
     wc.fillStyle = wc.createPattern(A.waterBg.img, 'repeat');
@@ -51,7 +54,7 @@ export function createScene(canvas) {
     for (let ty = ISLAND.y0; ty <= ISLAND.y1; ty++) {
       for (let tx = ISLAND.x0; tx <= ISLAND.x1; tx++) {
         const [col, row] = grassTile(tx, ty);
-        lc.drawImage(A.tilemap.img, col * TILE, row * TILE, TILE, TILE, tx * TILE, ty * TILE, TILE, TILE);
+        lc.drawImage(tiles, col * TILE, row * TILE, TILE, TILE, tx * TILE, ty * TILE, TILE, TILE);
         if (tx === ISLAND.x0 || tx === ISLAND.x1 || ty === ISLAND.y0 || ty === ISLAND.y1) edgeTiles.push([tx, ty]);
       }
     }
@@ -192,19 +195,24 @@ export function createScene(canvas) {
     update(view) {
       focus = view.focus || focus;
       units = view.units || units;
+      // prestigio: a aldeia virou lenda e nasceu outra, em outro bioma (o nivel volta a 0)
+      const pr = view.summary?.prestige ?? 0;
+      const reborn = pr !== prestige;
+      if (reborn) { prestige = pr; buildGround(); rising.clear(); puffs.length = 0; }
       const next = stageFor(view.summary?.level ?? 0);
-      if (next !== stage) {
+      if (next !== stage || reborn) {
         const before = new Set(els().map(e => e.id));
         const prev = stage;
         stage = next;
-        // so anima a chegada se nao for o carregamento inicial
-        if (!first) {
+        // so anima a chegada de elementos novos numa evolucao normal (nao no carregamento nem no renascimento)
+        if (!first && !reborn) {
           const now = performance.now();
           for (const e of els()) if (!before.has(e.id)) rising.set(e.id, now);
           api.onStage?.(stage, STAGE_NAMES[stage], prev);
         }
         buildNav();
       }
+      if (reborn && !first) api.onPrestige?.(pr);
       crowd.sync(units, depositAt(stage), crowdCaps(stage));
       first = false;
     },
@@ -220,11 +228,12 @@ export function createScene(canvas) {
       return c;
     },
     get stage() { return stage; },
+    get prestige() { return prestige; },
     flags,
     advance(sec, step = 0.05) { for (let s = 0; s < sec; s += step) { tick(step); for (const c of clouds) c.x += c.speed * step; } },
     drawNow() { drawScene(performance.now()); },
     bench(n = 60) { const s0 = performance.now(); for (let i = 0; i < n; i++) drawScene(s0 + i * 33); return (performance.now() - s0) / n; },
-    get info() { return { stage, name: STAGE_NAMES[stage], folks: crowd.count(), rising: rising.size, night, drawMs: Math.round(drawMs * 100) / 100 }; },
+    get info() { return { stage, prestige, name: STAGE_NAMES[stage], folks: crowd.count(), rising: rising.size, night, drawMs: Math.round(drawMs * 100) / 100 }; },
   };
   Object.defineProperties(api, Object.getOwnPropertyDescriptors(methods));
   return api;

@@ -80,6 +80,13 @@ test('cartao: textos com era, nivel, estagio e tokens crus', () => {
   assert.match(l.date, /29\/10\/2026/);
 });
 
+test('cartao: aldeia lendaria mostra a lenda e a renda vitalicia (de todas as aldeias)', () => {
+  const view = { summary: { era: 'Era Feudal', level: 12, income: 80_000, lifetimeIncome: 42_000_000, prestige: 2 }, raw: { output: 5e7, cacheRead: 9e9 } };
+  const l = cardLines({ view, stageName: 'Vila vigiada', date: new Date(2026, 9, 29) });
+  assert.equal(l.subtitle, 'Era Feudal · Nível 12 · Vila vigiada · Lenda ×2');
+  assert.equal(l.income, 'Renda vitalícia 42 mi');
+});
+
 test('o aplicativo nao guarda fonte nem sprite do pacote no git (so os icones proprios)', () => {
   const ignore = fs.readFileSync(path.join(web, '../.gitignore'), 'utf8');
   assert.match(ignore, /web\/assets\//);

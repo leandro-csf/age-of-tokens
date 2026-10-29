@@ -19,7 +19,8 @@ function manifest() {
   const m = [];
   const add = (name, path, fw = 0, fh = 0) => m.push([name, path, fw, fh]);
 
-  add('tilemap', 'Terrain/Tileset/Tilemap_color1.png');
+  // 5 cores de grama = 5 biomas (o prestigio troca de bioma)
+  for (let i = 1; i <= 5; i++) add('tilemap' + i, `Terrain/Tileset/Tilemap_color${i}.png`);
   add('foam', 'Terrain/Tileset/Water Foam.png', 192, 192);
   add('waterBg', 'Terrain/Tileset/Water Background color.png');
   add('shadow', 'Terrain/Tileset/Shadow.png');

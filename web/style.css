@@ -41,6 +41,11 @@ button { font: inherit; color: inherit; border: 0; padding: 0; cursor: pointer; 
 .bar i { display: block; height: 100%; width: 0; background: repeating-linear-gradient(90deg, transparent 0 10px, rgba(0,0,0,.45) 10px 12px), linear-gradient(#f4d36a 0 40%, #e0a63a 40%); transition: width .6s steps(12); }
 #bar-note { grid-column: 1 / -1; font-family: var(--num); font-size: 12px; color: #d9c79a; margin-top: 4px; }
 
+#legend { left: 14px; top: 190px; width: 230px; height: 62px; display: flex; align-items: center; gap: 12px; padding: 0 22px 4px; color: var(--ink); }
+#legend[hidden] { display: none; }
+#legend b { font-family: var(--display); font-weight: 400; font-size: 30px; color: #8a5c18; white-space: nowrap; }
+#legend small { font-family: var(--num); font-size: 13px; color: #1f6a5a; }
+
 #res-bar { left: 584px; top: 8px; width: 742px; height: 64px; display: flex; align-items: center; justify-content: space-around; padding: 0 28px 4px; color: var(--ink); }
 .chip { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .chip .ic { width: 44px; height: 44px; image-rendering: pixelated; flex: none; }
@@ -52,7 +57,7 @@ button { font: inherit; color: inherit; border: 0; padding: 0; cursor: pointer; 
 .chip.focus::after { content: ''; width: 8px; height: 8px; background: #c8402c; animation: blink 1s steps(2) infinite; }
 
 /* ---------- detalhes (ao tocar nos recursos) ---------- */
-#details { left: 986px; top: 82px; width: 340px; height: 352px; padding: 16px 30px 22px; color: var(--ink); }
+#details { left: 986px; top: 82px; width: 340px; height: 410px; padding: 16px 30px 22px; color: var(--ink); }
 #details h2 { margin: 0 0 6px; font-family: var(--display); font-weight: 400; font-size: 26px; line-height: 1; color: #8a5c18; }
 #details .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-bottom: 12px; }
 #details small { display: block; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: #6b5438; }

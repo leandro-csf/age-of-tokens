@@ -17,10 +17,18 @@ import crypto from 'node:crypto';
  */
 
 export const FORMAT = 2;          // formato do envelope no disco
-export const STATE_VERSION = 1;   // versao do CONTEUDO (payload.version)
+export const STATE_VERSION = 2;   // versao do CONTEUDO (payload.version)
 
-/** Migracoes do conteudo: chave n = funcao que leva a versao n para n+1. (vazia: so existe a v1) */
-export const MIGRATIONS = {};
+/** Migracoes do conteudo: chave n = funcao que leva a versao n para n+1. */
+export const MIGRATIONS = {
+  // v1 -> v2 (prestigio): a aldeia existente vira a "aldeia 1" (nenhum prestigio ainda) e nada se perde.
+  1: p => {
+    p.sim.prestige = p.sim.prestige ?? 0;
+    p.sim.legacy = p.sim.legacy ?? 0;
+    p.sim.version = 2;
+    return p;
+  },
+};
 
 export class NewerVersionError extends Error {
   constructor(found, supported, file) {
@@ -134,8 +142,9 @@ export function createStore(file, { migrations = MIGRATIONS, stateVersion = STAT
           const upgraded = r.legacy || r.migratedFrom !== null;
           const first = c === file;
           if (first && upgraded) {
-            // guarda o original antes de a gravacao seguinte reescrever no formato novo
-            const bak = `${file}.pre-upgrade.bak`;
+            // guarda o original antes de a gravacao seguinte reescrever: uma copia por TIPO de atualizacao
+            // (formato antigo -> .pre-upgrade.bak; migracao de versao -> .pre-migration-vN.bak)
+            const bak = r.legacy ? `${file}.pre-upgrade.bak` : `${file}.pre-migration-v${r.migratedFrom}.bak`;
             if (!fs.existsSync(bak)) fs.copyFileSync(file, bak);
           }
           report = {

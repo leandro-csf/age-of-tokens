@@ -57,13 +57,21 @@ Os perfis sao de referencia (medidos no historico do desenvolvedor: media e dias
 
 Alem da renda, subir de era exige predios e populacao minimos (a definir).
 
-## 6. Depois do Imperial: prestigio
+## 6. Depois do Imperial: prestigio (implementado)
 
-Ao fechar o Imperial (nivel 30) o jogador pode "lendar" a aldeia: nova aldeia em outro bioma, contador de prestigio +1 e bonus permanente pequeno (a definir). A curva de niveis continua a mesma, em R vitalicia, entao os niveis seguem acima de 30 (L(40) ~ 37 milhoes) e o heavy nunca fica sem meta.
+**Quando:** a aldeia vira lenda sozinha (sem decisao do jogador) quando a **Maravilha esta erguida** E o **nivel da aldeia chega a 40** (renda da aldeia ~37 milhoes). Antes disso ela fica no estagio "Maravilha" (nivel 35 em diante).
+
+**O que acontece:** nasce uma aldeia nova, do zero, em outro bioma (5 cores de grama; o bioma e `prestigio mod 5`). Zeram recursos, predios, unidades, pesquisas, era e o **nivel**. Ficam os tokens crus, as sessoes, os subagentes, o contador de prestigio e a renda vitalicia.
+
+**Bonus permanente:** +10% de producao por prestigio (aditivo: lenda x3 = +30%), valendo para tokens e para o saque dos exploradores. A aldeia seguinte e mais rapida: os mesmos niveis custam ~1/1,1 dos tokens (lenda x1), ~1/1,3 (x3).
+
+**Nivel e renda vitalicia (revisao):** o **nivel e o da aldeia atual**; a mesma escada 0-40 (e as mesmas eras e estagios) se repete a cada lenda. A **renda vitalicia** (soma de todas as aldeias) nunca para de crescer e e a medida para comparar jogadores. A identidade comparavel e: **lendas, nivel da aldeia atual e renda vitalicia**. Isto substitui o texto antigo, em que o nivel seguia subindo alem de 30 sobre a renda vitalicia: nao dava para ligar eras e estagios a um nivel que nao volta.
+
+Constantes em `sim/src/rules.js` (`PRESTIGE_LEVEL`, `PRESTIGE_BONUS`, `BIOMES`).
 
 ## 7. Comparacao entre jogadores
 
-A identidade comparavel e: **nivel, era, prestigio e renda vitalicia**, exibidos junto com os **tokens crus** gastos (a UI mostra output e cache read reais para dar a nocao de volume). Compartilhar sera por cartao exportavel (imagem/texto), sem servidor. Antitrapaca fica fora do escopo por enquanto (os dados sao locais e editaveis).
+A identidade comparavel e: **lendas, nivel da aldeia atual, era e renda vitalicia**, exibidos junto com os **tokens crus** gastos (a UI mostra output e cache read reais para dar a nocao de volume). Compartilhar sera por cartao exportavel (imagem/texto), sem servidor. Antitrapaca fica fora do escopo por enquanto (os dados sao locais e editaveis).
 
 ## Em aberto
 

@@ -2,7 +2,7 @@ import { ERAS } from './content.js';
 import { levelFromIncome } from './levels.js';
 import {
   RESOURCES, TOKENS_PER_UNIT, TECH_BONUS, modelMult,
-  BASE_POP_CAP, HOUSE_POP, START_VILLAGERS, WORK_PER_BUILD, LOOT_PER_FACTOR,
+  BASE_POP_CAP, HOUSE_POP, START_VILLAGERS, WORK_PER_BUILD, LOOT_PER_FACTOR, PRESTIGE_LEVEL, PRESTIGE_BONUS,
 } from './rules.js';
 
 /*
@@ -14,10 +14,12 @@ import {
 export function newState() {
   const zero = () => Object.fromEntries(RESOURCES.map(r => [r, 0]));
   return {
-    version: 1,
+    version: 2,
+    prestige: 0,      // quantas aldeias ja viraram lenda
+    legacy: 0,        // renda das aldeias anteriores (a renda vitalicia = legacy + renda desta aldeia)
     era: 0,
     res: zero(),      // estoque (gasta)
-    earned: zero(),   // renda vitalicia por recurso (nunca diminui)
+    earned: zero(),   // renda DESTA aldeia por recurso (zera no prestigio; o nivel vem daqui)
     raw: { input: 0, output: 0, cacheRead: 0, cacheCreation: 0, thinking: 0 },
     built: {},        // predios por id
     units: { aldeao: START_VILLAGERS },
@@ -36,6 +38,12 @@ export function newState() {
 export function income(state) {
   return RESOURCES.reduce((n, r) => n + state.earned[r], 0);
 }
+/** Renda de todas as aldeias, a atual e as que viraram lenda: a medida para comparar jogadores. */
+export function lifetimeIncome(state) {
+  return (state.legacy || 0) + income(state);
+}
+/** Multiplicador de producao dos prestigios. */
+export const prestigeMult = state => 1 + PRESTIGE_BONUS * (state.prestige || 0);
 export function pop(state) {
   return Object.values(state.units).reduce((n, v) => n + v, 0);
 }
@@ -50,6 +58,9 @@ export function summary(state) {
     era: ERAS[state.era].name, eraIndex: state.era, level: level(state), income: income(state),
     pop: pop(state), popCap: popCap(state), buildings: Object.values(state.built).reduce((n, v) => n + v, 0),
     wonder: state.wonder,
+    prestige: state.prestige || 0,
+    lifetimeIncome: lifetimeIncome(state),
+    prestigeBonus: PRESTIGE_BONUS * (state.prestige || 0),
   };
 }
 
@@ -94,7 +105,8 @@ export function applyEvent(prev, ev) {
         stone: (input + cacheCreation) / TOKENS_PER_UNIT.stone,
         gold: thinking / TOKENS_PER_UNIT.gold,
       };
-      for (const r of RESOURCES) earn(s, r, base[r] * m * (1 + TECH_BONUS * techCount(s, r)));
+      const pm = prestigeMult(s);
+      for (const r of RESOURCES) earn(s, r, base[r] * m * pm * (1 + TECH_BONUS * techCount(s, r)));
       break;
     }
     case 'tool':
@@ -107,7 +119,7 @@ export function applyEvent(prev, ev) {
       break;
     case 'subagent:new': {
       s.subagents++;
-      const loot = LOOT_PER_FACTOR * ERAS[s.era].factor;
+      const loot = LOOT_PER_FACTOR * ERAS[s.era].factor * prestigeMult(s);
       earn(s, 'food', loot);
       earn(s, 'wood', loot);
       break;
@@ -218,6 +230,8 @@ function pickFocus(s) {
  * pagar, a aldeia economiza em vez de pular para algo mais barato.
  */
 export function step(prev) {
+  // a aldeia que cumpriu a lenda vira lenda antes de qualquer outra coisa
+  if (canPrestige(prev)) { const next = prestige(prev); return { state: next, action: { type: 'prestige', id: next.prestige } }; }
   const s = structuredClone(prev);
   s.tick++;
   s.focus = pickFocus(s);
@@ -231,7 +245,22 @@ export function step(prev) {
   return { state: s, action: action || { type: 'idle' } };
 }
 
-/** Pode lendar a aldeia (prestigio)? A transicao em si fica para depois do M1. */
+/** A aldeia pode virar lenda? Maravilha erguida E nivel da aldeia 40. */
 export function canPrestige(state) {
-  return state.wonder === true;
+  return state.wonder === true && level(state) >= PRESTIGE_LEVEL;
+}
+
+/**
+ * A aldeia vira lenda e nasce outra. Zera recursos, predios, unidades, pesquisas, era e o nivel;
+ * guarda os totais de tokens, sessoes, subagentes, os prestigios e a renda vitalicia (em `legacy`).
+ */
+export function prestige(prev) {
+  const s = newState();
+  s.prestige = (prev.prestige || 0) + 1;
+  s.legacy = lifetimeIncome(prev);
+  s.raw = { ...prev.raw };
+  s.sessions = prev.sessions;
+  s.subagents = prev.subagents;
+  s.tick = prev.tick;
+  return s;
 }

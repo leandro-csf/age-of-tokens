@@ -1,11 +1,12 @@
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
-import { ERAS, LEVEL_BASE, LEVEL_RATIO } from '../../sim/src/index.js';
+import { ERAS, LEVEL_BASE, LEVEL_RATIO, PRESTIGE_LEVEL, PRESTIGE_BONUS, BIOMES } from '../../sim/src/index.js';
 
 // Nomes e marcos para a tela (ela so recebe ids nos eventos). Estatico: calculado uma vez.
 const CONTENT = {
   level: { base: LEVEL_BASE, ratio: LEVEL_RATIO },
+  prestige: { level: PRESTIGE_LEVEL, bonus: PRESTIGE_BONUS, biomes: BIOMES },
   eras: ERAS.map(e => ({ id: e.id, name: e.name, nextAtLevel: e.advance?.minLevel ?? null })),
   totalTechs: ERAS.reduce((n, e) => n + e.techs.length, 0),
   // ordem canonica dos predios por era: define o lote de cada um no mapa (web/village/layout.js)

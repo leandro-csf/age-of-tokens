@@ -81,6 +81,6 @@
 ## 2026-10-29: pos-M5
 - [x] Incidente "numeros a zero" resolvido (contadores dependiam do requestAnimationFrame). 100 testes.
 - [x] Robustez do save (sem SQLite): envelope+checksum, migracao, recuperacao em cascata, backups rotativos, travas de regressao/escritor atrasado, instancia unica. 123 testes.
-- [ ] Prestigio.
+- [x] Prestigio (aldeia vira lenda: nasce outra em outro bioma, +10% de producao por lenda). 137 testes.
 - [ ] Acabamento da arte (Maravilha, acampamento).
 - [ ] Abrir sozinho com o Windows.

@@ -49,7 +49,7 @@ Fontes (OFL) e ícones do app são próprios e estão no repositório.
 | `web/` | a tela: ilha vista de cima que evolui em 11 estágios por nível, HUD, PWA e cartão |
 | `docs/` | conceito, regras, decisões e progresso |
 
-O nível da aldeia depende só da renda vitalícia, com a mesma curva para todos, então dá para comparar aldeias entre jogadores.
+O nível da aldeia depende só da renda dela, com a mesma curva para todos. Ao erguer a Maravilha e chegar ao nível 40, a aldeia **vira lenda** sozinha: nasce outra, em outro bioma, com +10% de produção permanente por lenda. Para comparar jogadores valem as lendas, o nível da aldeia atual e a renda vitalícia (soma de todas as aldeias).
 
 ## Testes
 
