@@ -1,6 +1,18 @@
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
+import { ERAS, LEVEL_BASE, LEVEL_RATIO } from '../../sim/src/index.js';
+
+// Nomes e marcos para a tela (ela so recebe ids nos eventos). Estatico: calculado uma vez.
+const CONTENT = {
+  level: { base: LEVEL_BASE, ratio: LEVEL_RATIO },
+  eras: ERAS.map(e => ({ id: e.id, name: e.name, nextAtLevel: e.advance?.minLevel ?? null })),
+  totalTechs: ERAS.reduce((n, e) => n + e.techs.length, 0),
+  names: Object.fromEntries(
+    ERAS.flatMap(e => [...e.buildings, ...e.units, ...e.techs]).map(i => [i.id, i.name])
+      .concat(ERAS.map(e => [e.id, e.name])),
+  ),
+};
 
 /*
  * API somente leitura + arquivos estaticos do front (web/). Nenhuma rota
@@ -8,6 +20,7 @@ import path from 'node:path';
  *
  *   GET /api/health   { ok: true }
  *   GET /api/state    snapshot completo (resumo + estado do motor)
+ *   GET /api/content  nomes (id -> nome), eras e constantes de nivel para a tela
  *   GET /api/stream   SSE: snapshot, ingest, action, state, heartbeat
  *   GET /*            arquivos de web/ (index.html por padrao)
  */
@@ -51,6 +64,7 @@ export function createHttp(game, { webDir = path.resolve('web') } = {}) {
 
     if (pathname === '/api/health') return sendJson(res, 200, { ok: true });
     if (pathname === '/api/state') return sendJson(res, 200, game.snapshot());
+    if (pathname === '/api/content') return sendJson(res, 200, CONTENT);
 
     if (pathname === '/api/stream') {
       res.writeHead(200, {

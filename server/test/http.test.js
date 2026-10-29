@@ -48,6 +48,22 @@ test('health, state e arquivos estaticos', async () => {
   } finally { s.close(); }
 });
 
+test('/api/content traz nomes, eras e constantes de nivel', async () => {
+  const s = await boot();
+  try {
+    const c = JSON.parse((await get(s.base + '/api/content')).body);
+    assert.equal(c.level.base, 5000);
+    assert.equal(c.level.ratio, 1.25);
+    assert.equal(c.eras.length, 4);
+    assert.equal(c.totalTechs, 16);
+    assert.equal(c.eras[0].nextAtLevel, 10);
+    assert.equal(c.eras[3].nextAtLevel, null);
+    assert.equal(c.names.casa, 'Casa');
+    assert.equal(c.names.arado, 'Arado');
+    assert.equal(c.names.feudal, 'Era Feudal');
+  } finally { s.close(); }
+});
+
 test('somente GET; rota de API desconhecida da 404', async () => {
   const s = await boot();
   try {

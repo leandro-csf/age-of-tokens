@@ -47,3 +47,12 @@
 - Logica em `createGame` (sem timers) e timers so em `index.js`: poll da ingestao a cada 2 s (encadeado), passo do decisor a cada 3 s (`STEP_MS`), save a cada 5 s se houver mudanca e ao receber SIGINT/SIGTERM. O decisor faz uma acao por passo, entao ao religar depois de dias a aldeia "digere" o acumulado aos poucos.
 - Save de versao diferente ou corrompido e ignorado (comeca do zero). Ainda nao ha migracao de save entre versoes do motor.
 - Verificado ao vivo contra o ~/.claude real (so leitura): tokens e tool_use desta propria sessao chegaram ao estado e ao SSE.
+
+## 2026-10-29 (M3: primeira tela)
+- Direcao visual: noite de aldeia medieval em pixel art. Fundo fuligem com grade de 8px, paineis com cantos serrilhados (borda de box-shadow), pergaminho no texto, ambar de tocha como destaque, turquesa para tokens.
+- Fontes: Jacquard 12 (blackletter em pixel) nos titulos e na era; Pixelify Sans no texto; Silkscreen nos numeros (digitos inequivocos: no Pixelify o 5 parece S e o 8 parece 5). Carregadas do Google Fonts em tempo de execucao; PENDENTE vendorizar para funcionar offline no PWA (M5).
+- Icones: sem emoji. 11 sprites 10x10 desenhados a mao em `web/pixel.js` (comida, madeira, pedra, ouro, aldeao, martelo, casa, livro, token, sol, lua), renderizados em SVG crispEdges. Ceu e morros sao gerados por codigo (faixas e degraus).
+- Estado da aldeia: "trabalha" (sol, ceu de dia) se chegaram tokens ha menos de 90 s ou houve obra/treino ha menos de 10 s; senao "dorme" (lua, ceu de noite); "sem sinal" se o SSE cai. Recurso em foco do decisor ganha borda ambar e um aldeao.
+- Cronica agrega rajadas de tokens em uma linha (1,5 s) para nao inundar. Numeros rolam ate o valor novo (rAF) e respeitam prefers-reduced-motion.
+- Servidor ganhou `/api/content` (nomes id->nome, eras, constantes de nivel, total de techs) e `SAVE_FILE` para apontar um save alternativo (usado para demonstracao).
+- Verificado no navegador embutido em 375x812 com um save de demonstracao e eventos injetados: layout cabe, sem erros no console, modo dia e noite. Nao testado em celular real nem em Safari/Firefox.

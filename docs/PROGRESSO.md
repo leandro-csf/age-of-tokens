@@ -14,7 +14,7 @@
 ## Roteiro ate rodar (marcos)
 - [x] M1 Motor: `sim/` puro e testavel (estoque, decisor, niveis/eras, custos). 29 testes, incluindo jornada completa ate a Maravilha e teste de orcamento por era.
 - [x] M2 Servidor local: `server/` junta ingestao + motor + save; `npm start` sobe em http://127.0.0.1:4100; /api/state e /api/stream (SSE). 54 testes no total (`npm test` na raiz). Validado ao vivo.
-- [ ] M3 Primeira versao rodavel: pagina minima em portrait (contadores de recursos, nivel/era, tokens crus, log de eventos). Ja da para abrir no navegador e ver a aldeia subir com uso real.
+- [x] M3 Primeira versao rodavel: `web/` em portrait (recursos, nivel/era com barra, aldeia, tokens crus, cronica). `npm start` e abrir http://127.0.0.1:4100. Verificado em 375x812.
 - [ ] M4 Aldeia visual: canvas isometrico pixel art com aldeoes e predios animados.
 - [ ] M5 PWA no celular: acesso pela rede local, instalavel, cartao exportavel.
 
@@ -22,3 +22,8 @@
 - Transicao de prestigio (reset, bioma, bonus, escala de custos pos-prestigio).
 - Efeito do "bonus de moral" da sessao nova.
 - Migracao de save entre versoes do motor (hoje save de outra versao e descartado).
+
+## Pendencias herdadas do M3
+- Vendorizar as fontes (Jacquard 12, Pixelify Sans, Silkscreen) para funcionar offline: entra no M5.
+- Testar em celular real e em outros navegadores.
+- A aldeia ainda nao e desenhada: so contadores. O canvas isometrico e o M4.

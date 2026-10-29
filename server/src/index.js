@@ -1,4 +1,4 @@
-// Uso: npm start (na raiz)   |   PORT=4100 HOST=127.0.0.1 STEP_MS=3000 CLAUDE_HOME=... node server/src/index.js
+// Uso: npm start (na raiz)   |   PORT=4100 HOST=127.0.0.1 STEP_MS=3000 CLAUDE_HOME=... SAVE_FILE=... node server/src/index.js
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from '../../ingest/src/config.js';
@@ -14,7 +14,7 @@ const saveMs = 5000;
 
 const game = createGame({
   projectsDir: config.claude.projectsDir,
-  saveFile: path.join(root, 'data', 'save.json'),
+  saveFile: process.env.SAVE_FILE || path.join(root, 'data', 'save.json'),
   baseline: process.argv.includes('--history') ? 'history' : 'now',
 });
 
