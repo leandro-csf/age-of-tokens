@@ -209,6 +209,16 @@ export function createScene(canvas) {
       first = false;
     },
     setAwake(v) { awake = v; },
+    /** Copia da cena como esta agora, em plena luz do dia (para o cartao de compartilhar). */
+    snapshot() {
+      const prev = night; night = 0;
+      drawScene(performance.now());
+      const c = document.createElement('canvas');
+      c.width = STAGE_W; c.height = STAGE_H;
+      c.getContext('2d').drawImage(canvas, 0, 0);
+      night = prev;   // o proximo quadro volta ao normal
+      return c;
+    },
     get stage() { return stage; },
     flags,
     advance(sec, step = 0.05) { for (let s = 0; s < sec; s += step) { tick(step); for (const c of clouds) c.x += c.speed * step; } },

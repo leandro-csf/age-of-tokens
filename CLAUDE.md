@@ -28,5 +28,8 @@ Jogo idle estilo Age of Empires: uma aldeia global evolui sozinha (sem decisão 
 - `web/world/`: a aldeia vista de cima com a arte Tiny Swords, como NUCLEO QUE EVOLUI por 11 estagios (nao mostra os 86 predios do motor). `stages.js` (estagios por nivel, posicoes fixas, floresta, autotile; puro e testado), `nav.js` (grade de 16 px + busca de caminho; puro e testado), `assets.js` (carregador das tiras de sprites), `actors.js` (aldeoes: ciclo de coleta; soldados e monges), `scene.js` (camera fixa 1:1 no palco 1340x800, terreno, espuma, chegada de elementos com poeira, noite). `web/world-dev.html` esta DESATUALIZADA (usava a API antiga da cena): nao usar.
 - `web/ui/skins.js`: recompõe os papeis/madeira/fitas do pacote em paineis de qualquer tamanho.
 - `web/assets/`: sprites do Tiny Swords. FORA DO GIT (licenca proibe redistribuir): ver `docs/ASSETS.md`.
+- `web/ui/`: `skins.js` (paineis 9-fatias), `format.js` (numeros em portugues), `card.js` (cartao PNG de compartilhar).
+- `web/sw.js` + `web/manifest.webmanifest` + `web/icons/` (icones PROPRIOS gerados por `scripts/make-icons.mjs`, nunca derivados do Tiny Swords) + `web/fonts/` (woff2 OFL + licencas): PWA e modo offline. `server/src/net.js` lista os enderecos de rede.
+- `README.md` na raiz explica como rodar e usar no tablet.
 - `data/`: save do jogo (`save.json`), fora do git.
 - `docs/`: conceito, decisões, progresso, stack.

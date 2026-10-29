@@ -16,7 +16,7 @@
 - [x] M2 Servidor local: `server/` junta ingestao + motor + save; `npm start` sobe em http://127.0.0.1:4100; /api/state e /api/stream (SSE). 54 testes no total (`npm test` na raiz). Validado ao vivo.
 - [x] M3 Primeira versao rodavel: `web/` em portrait (recursos, nivel/era com barra, aldeia, tokens crus, cronica). `npm start` e abrir http://127.0.0.1:4100. Verificado em 375x812.
 - [x] M4 Aldeia visual: `web/village/` (canvas isometrico pixel art, 14 tipos de predio + centro urbano, aldeoes com caminho nas ruas, obras que sobem, dia/noite, camera com zoom inteiro). 62 testes (7 novos, do layout). Verificado em 375x812.
-- [ ] M5 PWA no celular: acesso pela rede local, instalavel, cartao exportavel.
+- [x] M5 Tablet e PWA: rede local, fontes offline, manifesto + service worker + icones proprios, tela cheia, cartao PNG, README. 85+ testes. Limite: PWA/offline real exige HTTPS (ver README).
 
 ## Pendencias herdadas do M1
 - Transicao de prestigio (reset, bioma, bonus, escala de custos pos-prestigio).
@@ -70,3 +70,10 @@
 - [ ] Ver em tablet real; revisar proporcoes com o usuario.
 - [ ] Reforcar o estagio 10 (Maravilha) e talvez dar mais vida ao estagio 0.
 - [ ] `web/world-dev.html` ficou desatualizada (API antiga): atualizar ou remover.
+
+## Depois do M5
+- [ ] Testar de verdade no tablet: acesso por 192.168.x.x, tela cheia, compartilhar (Web Share), e o PWA por HTTPS/tunel ou com a flag.
+- [ ] Registro real do service worker nao foi provado (o navegador embutido recusa); so a logica foi testada.
+- [ ] Prestigio (nova aldeia em outro bioma) sem visual; estagio 10 (Maravilha) ainda modesto.
+- [ ] Migracao de save entre versoes do motor.
+- [ ] Revisar com o usuario o HUD e as proporcoes em tablet real.

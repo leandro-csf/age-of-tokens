@@ -1,6 +1,8 @@
 import { loadAssets } from './world/assets.js';
 import { createScene } from './world/scene.js';
 import { loadSkins, paintAll } from './ui/skins.js';
+import { compact } from './ui/format.js';
+import { cardLines, makeCard, shareOrDownload } from './ui/card.js';
 
 const $ = id => document.getElementById(id);
 const nf = new Intl.NumberFormat('pt-BR');
@@ -22,17 +24,6 @@ let toastTimer = 0;
 function fit() { $('stage').style.setProperty('--k', Math.min(innerWidth / 1340, innerHeight / 800)); }
 addEventListener('resize', fit);
 fit();
-
-// ---------- formatacao ----------
-function compact(n) {
-  n = Math.floor(n);
-  const f = (v, s) => `${v.toLocaleString('pt-BR', { maximumFractionDigits: v < 100 ? 1 : 0 })} ${s}`;
-  if (n < 10_000) return nf.format(n);
-  if (n < 1e6) return f(n / 1e3, 'mil');
-  if (n < 1e9) return f(n / 1e6, 'mi');
-  if (n < 1e12) return f(n / 1e9, 'bi');
-  return f(n / 1e12, 'tri');
-}
 
 // ---------- numeros que rolam ate o valor ----------
 const counters = new Map();
@@ -121,6 +112,40 @@ $('res-bar').addEventListener('click', () => toggleDetails());
 $('details').addEventListener('click', () => toggleDetails(false));
 addEventListener('keydown', e => { if (e.key === 'd' || e.key === 'D') toggleDetails(); if (e.key === 'Escape') toggleDetails(false); });
 
+// ---------- compartilhar ----------
+$('share').addEventListener('click', async e => {
+  e.stopPropagation();                       // nao fecha o painel de detalhes
+  if (!view || !scene) return;
+  const btn = $('share');
+  btn.disabled = true;
+  try {
+    const lines = cardLines({ view, stageName: scene.info.name });
+    const blob = await makeCard({ world: scene.snapshot(), lines });
+    const how = await shareOrDownload(blob, lines.filename);
+    if (how !== 'cancelado') toast('Icon_03', how === 'baixado' ? 'Cartão da aldeia salvo' : 'Cartão da aldeia compartilhado');
+  } catch (err) {
+    console.error(err);
+    toast('Icon_09', 'Não consegui gerar o cartão');
+  } finally { btn.disabled = false; }
+});
+
+// ---------- tela cheia ----------
+function setupFullscreen() {
+  const btn = $('fs');
+  const standalone = matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches;
+  if (!document.documentElement.requestFullscreen || standalone) return;   // ja esta em tela cheia, ou o aparelho nao suporta
+  btn.hidden = false;
+  btn.addEventListener('click', async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else {
+        await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+        screen.orientation?.lock?.('landscape').catch(() => {});   // nem todo aparelho deixa travar
+      }
+    } catch (err) { console.warn('tela cheia:', err.message); }
+  });
+}
+
 // ---------- stream ----------
 function connect() {
   const es = new EventSource('/api/stream');
@@ -168,6 +193,9 @@ async function start() {
     $('conn').hidden = false;
     return setTimeout(start, 3000);
   }
+  setupFullscreen();
+  // offline: so em contexto seguro (localhost ou HTTPS). Em http://192.168.x.x o navegador nao registra.
+  if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('/sw.js').catch(err => console.warn('service worker:', err.message));
   scene = createScene($('world'));
   scene.onStage = (stage, name) => toast('Icon_06', `Sua aldeia evoluiu: ${name}`, 'big');
   window.__scene = scene; // depuracao no console

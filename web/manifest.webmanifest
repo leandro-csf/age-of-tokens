@@ -1,0 +1,18 @@
+{
+  "name": "Age of Tokens",
+  "short_name": "Age of Tokens",
+  "description": "Uma aldeia que evolui sozinha conforme você usa o Claude.",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "landscape",
+  "background_color": "#14323c",
+  "theme_color": "#4a93a6",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

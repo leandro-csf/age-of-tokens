@@ -19,7 +19,7 @@ async function boot() {
   const server = createHttp(game, { webDir: web });
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const base = `http://127.0.0.1:${server.address().port}`;
-  return { game, server, base, projects, close: () => server.closeAllConnections?.() || server.close() };
+  return { game, server, base, projects, web, close: () => server.closeAllConnections?.() || server.close() };
 }
 
 function get(url, method = 'GET') {
@@ -45,6 +45,16 @@ test('health, state e arquivos estaticos', async () => {
     assert.equal(index.status, 200);
     assert.match(index.headers['content-type'], /text\/html/);
     assert.equal(index.body, '<h1>aldeia</h1>');
+  } finally { s.close(); }
+});
+
+test('serve fonte woff2 e manifesto com o tipo certo', async () => {
+  const s = await boot();
+  try {
+    fs.writeFileSync(path.join(s.web, 'f.woff2'), Buffer.from('wOF2'));
+    fs.writeFileSync(path.join(s.web, 'app.webmanifest'), '{}');
+    assert.equal((await get(s.base + '/f.woff2')).headers['content-type'], 'font/woff2');
+    assert.match((await get(s.base + '/app.webmanifest')).headers['content-type'], /manifest\+json/);
   } finally { s.close(); }
 });
 
