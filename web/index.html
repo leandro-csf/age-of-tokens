@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#100e0c">
+  <meta name="theme-color" content="#4a93a6">
   <title>Age of Tokens</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,65 +11,55 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<main class="app">
+<div id="stage">
+  <canvas id="world" role="img" aria-label="Vista da aldeia, com prédios e aldeões trabalhando"></canvas>
 
-  <header class="hero" id="hero">
-    <div id="sky"></div>
-    <div class="astro" id="astro"></div>
-    <div class="hero-text">
-      <p class="status" id="status"><span id="status-text">Conectando</span></p>
-      <h1 class="era" id="era">Age of Tokens</h1>
-      <p class="era-next" id="era-next">&nbsp;</p>
-    </div>
-  </header>
+  <!-- topo: era, recursos, estado -->
+  <div class="hud ribbon" id="era-ribbon" data-skin="ribbon-blue"><span id="era">Age of Tokens</span></div>
+  <p class="hud shadow" id="era-next">&nbsp;</p>
 
-  <section class="panel scene" aria-label="Vista da aldeia">
-    <canvas id="village" role="img" aria-label="Vista isométrica da aldeia, com prédios e aldeões"></canvas>
-  </section>
+  <div class="hud paper" id="res-bar" data-skin="paper" aria-label="Recursos">
+    <div class="chip" data-res="food"><img class="ic" data-icon="Icon_04" alt="Comida"><b id="v-food">0</b></div>
+    <div class="chip" data-res="wood"><img class="ic" data-icon="Icon_02" alt="Madeira"><b id="v-wood">0</b></div>
+    <div class="chip" data-res="stone"><img class="ic" data-rock alt="Pedra"><b id="v-stone">0</b></div>
+    <div class="chip" data-res="gold"><img class="ic" data-icon="Icon_03" alt="Ouro"><b id="v-gold">0</b></div>
+  </div>
 
-  <section class="panel level" aria-label="Nível da aldeia">
-    <div class="level-head">
-      <span class="lbl">Nível</span>
-      <strong class="level-num" id="level">0</strong>
-      <span class="income" id="income">renda 0</span>
-    </div>
-    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="bar"><i id="bar-fill"></i></div>
-    <p class="note" id="bar-note">&nbsp;</p>
-  </section>
+  <div class="hud paper" id="status" data-skin="paper"><i class="dot"></i><span id="status-text">Conectando</span></div>
 
-  <section class="resources" aria-label="Recursos">
-    <div class="res" data-res="food"><span class="who" data-sprite="villager" data-px="2"></span><div class="ico" data-sprite="food"></div><span class="name">Comida</span><b class="val" id="v-food">0</b></div>
-    <div class="res" data-res="wood"><span class="who" data-sprite="villager" data-px="2"></span><div class="ico" data-sprite="wood"></div><span class="name">Madeira</span><b class="val" id="v-wood">0</b></div>
-    <div class="res" data-res="stone"><span class="who" data-sprite="villager" data-px="2"></span><div class="ico" data-sprite="stone"></div><span class="name">Pedra</span><b class="val" id="v-stone">0</b></div>
-    <div class="res" data-res="gold"><span class="who" data-sprite="villager" data-px="2"></span><div class="ico" data-sprite="gold"></div><span class="name">Ouro</span><b class="val" id="v-gold">0</b></div>
-  </section>
+  <!-- base: nível, tokens, aldeia -->
+  <div class="hud wood" id="level-box" data-skin="wood">
+    <span class="lvl-lbl">Nível</span><b id="level">0</b>
+    <div class="bar" id="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"><i id="bar-fill"></i></div>
+    <small id="bar-note">&nbsp;</small>
+  </div>
 
-  <section class="panel village" aria-label="Aldeia">
-    <h2>Aldeia</h2>
-    <dl class="stats">
-      <div><dt><span data-sprite="villager" data-px="2"></span>População</dt><dd id="s-pop">0/0</dd></div>
-      <div><dt><span data-sprite="house" data-px="2"></span>Prédios</dt><dd id="s-build">0</dd></div>
-      <div><dt><span data-sprite="book" data-px="2"></span>Pesquisas</dt><dd id="s-tech">0</dd></div>
-      <div><dt><span data-sprite="hammer" data-px="2"></span>Pontos de obra</dt><dd id="s-work">0</dd></div>
-    </dl>
-  </section>
+  <div class="hud paper" id="tok-bar" data-skin="paper" aria-label="Tokens gastos">
+    <div class="tk"><small>Saída</small><b id="t-output">0</b></div>
+    <div class="tk"><small>Cache lido</small><b id="t-cacheRead">0</b></div>
+    <div class="tk"><small>Entrada + cache</small><b id="t-in">0</b></div>
+    <div class="tk"><small>Pensamento</small><b id="t-thinking">0</b></div>
+  </div>
 
-  <section class="panel tokens" aria-label="Tokens gastos">
-    <h2>Tokens gastos</h2>
-    <dl class="stats tok">
-      <div><dt><span data-sprite="token" data-px="2"></span>Saída</dt><dd id="t-output">0</dd></div>
-      <div><dt><span data-sprite="token" data-px="2"></span>Cache lido</dt><dd id="t-cacheRead">0</dd></div>
-      <div><dt><span data-sprite="token" data-px="2"></span>Entrada e cache criado</dt><dd id="t-in">0</dd></div>
-      <div><dt><span data-sprite="token" data-px="2"></span>Pensamento</dt><dd id="t-thinking">0</dd></div>
-    </dl>
-  </section>
+  <div class="hud paper" id="stats-bar" data-skin="paper" aria-label="Aldeia">
+    <div class="st"><small>População</small><b id="s-pop">0/0</b></div>
+    <div class="st"><small>Prédios</small><b id="s-build">0</b></div>
+    <div class="st"><small>Pesquisas</small><b id="s-tech">0</b></div>
+    <div class="st"><small>Obra</small><b id="s-work">0</b></div>
+  </div>
 
-  <section class="panel chronicle" aria-label="Crônica">
+  <div class="hud slate" id="log-box" data-skin="slate" aria-label="Crônica">
     <h2>Crônica</h2>
-    <ol class="log" id="log"><li class="empty">A aldeia aguarda o primeiro sinal.</li></ol>
-  </section>
+    <ol id="log"><li class="empty">A aldeia aguarda o primeiro sinal.</li></ol>
+  </div>
+</div>
 
-</main>
+<div id="missing" hidden>
+  <h1>Faltam os sprites do Tiny Swords</h1>
+  <p>A licença do pacote não permite redistribuir os arquivos, então eles não vêm no repositório.</p>
+  <p>Baixe o <b>Tiny Swords (Free Pack)</b> de Pixel Frog e extraia em <code>web/assets/tiny-swords/</code>. Passo a passo em <code>docs/ASSETS.md</code>.</p>
+  <p><a href="https://pixelfrog-assets.itch.io/tiny-swords">pixelfrog-assets.itch.io/tiny-swords</a></p>
+</div>
 <script type="module" src="app.js"></script>
 </body>
 </html>

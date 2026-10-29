@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Age of Tokens - mundo (dev)</title>
+  <style>
+    html, body { margin: 0; background: #14110d; color: #efe4c8; font: 12px ui-monospace, monospace; overflow: hidden; }
+    #bar { position: fixed; top: 4px; left: 4px; z-index: 2; display: flex; gap: 6px; flex-wrap: wrap; }
+    button { font: inherit; padding: 4px 8px; background: #3b2f22; color: #efe4c8; border: 2px solid #6b5438; cursor: pointer; }
+    #wrap { position: fixed; left: 50%; top: 50%; width: 1340px; height: 800px; transform-origin: center; }
+    canvas { width: 1340px; height: 800px; display: block; image-rendering: auto; }
+  </style>
+</head>
+<body>
+<div id="bar"></div>
+<div id="wrap"><canvas id="world"></canvas></div>
+<script type="module">
+  import { loadAssets } from './world/assets.js';
+  import { createScene } from './world/scene.js';
+  const content = await (await fetch('/api/content')).json();
+  await loadAssets();
+  const scene = createScene(document.getElementById('world'), content);
+  window.scene = scene;
+  const fit = () => {
+    const k = Math.min(innerWidth / 1340, innerHeight / 800);
+    document.getElementById('wrap').style.transform = `translate(-50%,-50%) scale(${k})`;
+  };
+  addEventListener('resize', fit); fit();
+  const STAGES = {
+    'inicio': {},
+    'era 0': { casa: 10, fazenda: 8, serraria: 4, mina: 3 },
+    'era 1': { casa: 18, fazenda: 8, serraria: 4, mina: 3, quartel: 2, ferraria: 1, mercado: 1, torre: 4 },
+    'era 2': { casa: 28, fazenda: 8, serraria: 4, mina: 3, quartel: 2, ferraria: 1, mercado: 1, torre: 4, castelo: 1, universidade: 1, mosteiro: 1, muralha: 20 },
+    'tudo': { casa: 38, fazenda: 8, serraria: 4, mina: 3, quartel: 2, ferraria: 1, mercado: 1, torre: 4, castelo: 1, universidade: 1, mosteiro: 1, muralha: 20, catedral: 1, maravilha: 1 },
+  };
+  const UNITS = { aldeao: 22, espadachim: 6, arqueiro: 4, cavaleiro: 3, monge: 2 };
+  let f = 0; const FOCI = ['wood', 'gold', 'food', 'stone'];
+  const focus = () => FOCI[f % 4];
+  const mk = (label, fn) => { const b = Object.assign(document.createElement('button'), { textContent: label }); b.onclick = fn; document.getElementById('bar').append(b); return b; };
+  let awake = true; scene.setAwake(true);
+  mk('dia/noite', () => { awake = !awake; scene.setAwake(awake); });
+  mk('foco', e => { f++; e.target.textContent = 'foco: ' + focus(); scene.update({ built: window.cur, units: UNITS, focus: focus() }); });
+  for (const [name, built] of Object.entries(STAGES)) {
+    const b = Object.assign(document.createElement('button'), { textContent: name });
+    b.onclick = () => { window.cur = built; scene.update({ built, units: UNITS, focus: focus() }); };
+    document.getElementById('bar').append(b);
+  }
+  window.cur = STAGES['era 0'];
+  scene.update({ built: STAGES['era 0'], units: UNITS, focus: 'wood' });
+</script>
+</body>
+</html>

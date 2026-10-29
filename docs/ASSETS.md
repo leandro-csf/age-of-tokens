@@ -11,7 +11,13 @@ Fonte: https://pixelfrog-assets.itch.io/tiny-swords  (arquivo "Tiny Swords (Free
 ## Como obter de novo (o repo nao traz os arquivos)
 1. Abra a pagina acima, clique em Download, escolha "No thanks, just take me to the downloads" (valor zero) e baixe `Tiny Swords (Free Pack).zip`.
 2. Extraia para `web/assets/tiny-swords/` de modo que exista `web/assets/tiny-swords/Tiny Swords (Free Pack)/Units/Blue Units/Pawn/...`.
-3. `web/assets/tiny-swords-preview.html` (so local) anima tudo para conferir.
+3. `web/assets/tiny-swords-preview.html` e `ui-preview.html` (so locais, dentro da pasta ignorada) animam tudo para conferir.
+
+## Tileset (Tilemap_color1, grade 9x6 de 64 px)
+Grama plana: bloco 3x3 em (0..2, 0..2) = cantos/bordas/centro; coluna 3 = faixas verticais; linha 3 = faixas horizontais; (3,3) = tile isolado; (0,4),(0,5),(3,4),(3,5) = escadas. Platô elevado em (5..8, 0..5) com penhasco de pedra nas linhas 4-5. Usamos so o bloco 3x3 para a ilha retangular.
+
+## Interface (medidas das pecas, conferidas na imagem)
+Papers (RegularPaper/SpecialPaper 320x320), WoodTable e Banner (448x448): 3x3 pecas separadas por vaos, recompostas em `web/ui/skins.js`. Ribbons: BigRibbons 5 cores x 103 px; SmallRibbons 5 cores (linhas de ~60 px). Icons 01-12: 01 martelo, 02 tora, 03 moeda, 04 carne, 05 espada, 06 escudo, 07 verde, 08 seta laranja, 09 X vermelho, 10 engrenagem, 11 info, 12 notas musicais.
 
 ## Convencoes
 - Grade do mapa: **64x64 px**. Animacao a **10 fps** (quadros lado a lado em uma tira horizontal, 1 linha).

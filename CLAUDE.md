@@ -16,15 +16,17 @@ Jogo idle estilo Age of Empires: uma aldeia global evolui sozinha (sem decisão 
 - Ociosidade não pune: sem uso, a aldeia só dorme.
 
 ## Design (preferências do usuário)
-- Nada de emoji como ícone: ícones são pixel art própria (`web/pixel.js`).
-- Fontes com identidade de jogo medieval, nunca genéricas (Inter/Roboto/system). Hoje: Jacquard 12 (títulos), Pixelify Sans (texto), Silkscreen (números, porque no Pixelify o 5 parece S).
+- Nada de emoji como ícone: ícones vêm do pacote Tiny Swords (`Icons/`).
+- Fontes com identidade de jogo medieval, nunca genéricas (Inter/Roboto/system). Hoje: Jacquard 12 (títulos), Pixelify Sans (texto), Silkscreen (números, porque no Pixelify o 5 parece S). Arte: Tiny Swords (Pixel Frog), vista de cima, estilo RTS cartunesco.
 - Evitar o visual genérico da skill frontend-design: cada decisão visual deve ter relação com o jogo.
 
 ## Layout
 - `ingest/`: parsers e acumulador de tokens copiados do session manager (`npm test` em `ingest/`).
 - `sim/`: motor de simulação puro (sem I/O): estado, eventos da ingestão, decisor, níveis/eras. Fonte da verdade dos números: `sim/src/rules.js` e `sim/src/content.js` (`npm test` em `sim/`).
 - `server/`: junta ingestão + motor + save (`game.js`, sem timers) e expõe HTTP/SSE (`http.js`); `index.js` liga os timers. `npm start` na raiz sobe em http://127.0.0.1:4100. `npm test` na raiz roda tudo.
-- `web/`: front em HTML/CSS/JS puro (sem build): `index.html`, `style.css`, `app.js` (SSE de /api/stream), `pixel.js` (sprites 10x10 de interface e paisagem do topo, em SVG).
-- `web/village/`: a aldeia isometrica em canvas. `layout.js` (planta urbana, pura e testada em `web/test/`), `art.js` (sprites de predios/arvores/chao gerados por codigo), `village.js` (camera, terreno, aldeoes, obras, noite). `web/dev-sprites.html` e a pagina de preview da arte; no console, `window.__village` (`info`, `bench(n)`, `update`, `setAwake`) e `?rise=ms` alongam a animacao de obra.
+- `web/`: front em HTML/CSS/JS puro (sem build), num PALCO FIXO de 1340x800 (tablet deitado) escalado para a tela. `index.html`/`style.css`/`app.js` (HUD e SSE de /api/stream).
+- `web/world/`: o mundo visto de cima com a arte Tiny Swords. `layout.js` (posicao fixa de cada predio, arvores, jazidas, autotile; puro e testado), `nav.js` (grade de 16 px + busca de caminho; puro e testado), `assets.js` (carregador das tiras de sprites), `actors.js` (aldeoes: ciclo de coleta; soldados e monges), `scene.js` (camera 1:1 -> 0,5x, terreno, espuma, obras, noite). `web/world-dev.html` e a pagina de teste (botoes de estagio, dia/noite).
+- `web/ui/skins.js`: recompõe os papeis/madeira/fitas do pacote em paineis de qualquer tamanho.
+- `web/assets/`: sprites do Tiny Swords. FORA DO GIT (licenca proibe redistribuir): ver `docs/ASSETS.md`.
 - `data/`: save do jogo (`save.json`), fora do git.
 - `docs/`: conceito, decisões, progresso, stack.

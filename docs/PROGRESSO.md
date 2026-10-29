@@ -34,9 +34,29 @@
 - Sem som e sem toque na cena (por decisao: o jogo nao tem input).
 - Prestigio (nova aldeia em outro bioma) ainda sem visual.
 
+## M4b: aldeia com Tiny Swords (feito, para revisar com o olho do usuario)
+- [x] Pacote baixado (fora do git), inventariado e documentado em docs/ASSETS.md.
+- [x] Mapeamento dos 14 predios para os sprites do pacote (aprovado).
+- [x] Carregador de sprites e animacao por quadros (`web/world/assets.js`).
+- [x] Mundo visto de cima: ilha com agua e espuma, predios, arvores, jazidas, pastos, muralha e torres.
+- [x] Ciclo de coleta dos aldeoes com as animacoes do pacote; soldados e monges; poeira nas obras; noite.
+- [x] HUD em paisagem com a interface do pacote.
+- [x] Testes: layout do mundo (12) e navegacao (7). Total 74 testes na raiz.
+- [ ] Ver em tablet real 1340x800 (e a camera animando de verdade, nao so no `snapCamera`).
+- [ ] Revisar com o usuario: proporcoes, ancoras dos aldeoes, muralha (pecas pequenas), HUD, textos.
+- [ ] Vendorizar as fontes (Jacquard 12, Pixelify Sans, Silkscreen) para funcionar offline.
+- [ ] Prestigio (nova aldeia em outro bioma) ainda sem visual; tilemap tem 5 cores de grama e plato elevado para isso.
+- [ ] Sem som.
+
+## Pendencias herdadas do M4
+- Verificado so no navegador embutido e com `requestAnimationFrame` limitado (painel em segundo plano); ver em celular real e em Safari/Firefox, incluindo a fluidez a 30 fps.
+- A arte e minha primeira passada: vale revisar com o olho do usuario (cores, proporcoes, muralhas, aldeoes).
+- Sem som e sem toque na cena (por decisao: o jogo nao tem input).
+- Prestigio (nova aldeia em outro bioma) ainda sem visual.
+
 ## M4b: refazer a aldeia com Tiny Swords (em andamento)
 - [x] Pacote escolhido, baixado (fora do git), inventariado e conferido visualmente: peao com cortar/minerar/construir e cargas, predios, arvores, ouro, ovelhas, terreno, agua com espuma, efeitos e UI.
-- [ ] Decidir mapeamento dos 14 predios do jogo para os 8 do pacote (faltam fazenda, serraria, mina, mercado, ferraria, universidade, catedral, muralha, maravilha) e a escala de exibicao.
+- [x] Decidir mapeamento dos 14 predios do jogo para os 8 do pacote (faltam fazenda, serraria, mina, mercado, ferraria, universidade, catedral, muralha, maravilha) e a escala de exibicao.
 - [ ] Carregador de sprite sheets + sistema de animacao por quadros.
 - [ ] Mundo visto de cima: ilha de grama com agua e espuma, predios, arvores, minas de ouro, ovelhas.
 - [ ] Ciclo de coleta: peao vai ao recurso, trabalha, volta carregando e deposita.
