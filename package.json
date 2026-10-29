@@ -1,0 +1,10 @@
+{
+  "name": "age-of-tokens",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server/src/index.js",
+    "test": "node --test \"ingest/test/*.test.js\" \"sim/test/*.test.js\" \"server/test/*.test.js\""
+  }
+}

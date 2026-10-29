@@ -40,3 +40,10 @@
 - "Bonus de moral" da sessao nova ficou de fora do M1 (sem efeito definido).
 - Prestigio: so `canPrestige` (Maravilha construida). A transicao (reset, bioma, bonus, escala de custos pos-prestigio) fica para depois, porque a renda vitalicia ja passa do nivel 30 e os custos precisam de nova regra.
 - Valores de conteudo das eras 2-4 fechados em sim/src/content.js; orcamentos: 76,5% / 71,1% / 78,5% / 74,7% da renda de cada era.
+
+## 2026-10-29 (M2: servidor local)
+- Um unico arquivo de save (`data/save.json`) com o estado da ingestao e o do motor, gravado de forma atomica. Os eventos da ingestao entram no motor no mesmo instante em que o offset avanca (onEvent sincrono), entao qualquer save e coerente: nada conta duas vezes nem se perde numa queda.
+- Servidor sem dependencias (`node:http`), porta 4100 (o session manager usa 4000/5175), `127.0.0.1` por padrao; abrir para a rede local fica para o M5. API so GET: /api/health, /api/state, /api/stream (SSE: snapshot, ingest, action, state, heartbeat) e arquivos estaticos de `web/` com protecao contra path traversal.
+- Logica em `createGame` (sem timers) e timers so em `index.js`: poll da ingestao a cada 2 s (encadeado), passo do decisor a cada 3 s (`STEP_MS`), save a cada 5 s se houver mudanca e ao receber SIGINT/SIGTERM. O decisor faz uma acao por passo, entao ao religar depois de dias a aldeia "digere" o acumulado aos poucos.
+- Save de versao diferente ou corrompido e ignorado (comeca do zero). Ainda nao ha migracao de save entre versoes do motor.
+- Verificado ao vivo contra o ~/.claude real (so leitura): tokens e tool_use desta propria sessao chegaram ao estado e ao SSE.

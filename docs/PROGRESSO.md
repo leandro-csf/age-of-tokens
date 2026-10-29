@@ -13,7 +13,7 @@
 
 ## Roteiro ate rodar (marcos)
 - [x] M1 Motor: `sim/` puro e testavel (estoque, decisor, niveis/eras, custos). 29 testes, incluindo jornada completa ate a Maravilha e teste de orcamento por era.
-- [ ] M2 Servidor local: `server/` junta ingestao + motor + save do jogo; um comando (`npm start`) e porta definida; expoe estado e eventos por SSE.
+- [x] M2 Servidor local: `server/` junta ingestao + motor + save; `npm start` sobe em http://127.0.0.1:4100; /api/state e /api/stream (SSE). 54 testes no total (`npm test` na raiz). Validado ao vivo.
 - [ ] M3 Primeira versao rodavel: pagina minima em portrait (contadores de recursos, nivel/era, tokens crus, log de eventos). Ja da para abrir no navegador e ver a aldeia subir com uso real.
 - [ ] M4 Aldeia visual: canvas isometrico pixel art com aldeoes e predios animados.
 - [ ] M5 PWA no celular: acesso pela rede local, instalavel, cartao exportavel.
@@ -21,4 +21,4 @@
 ## Pendencias herdadas do M1
 - Transicao de prestigio (reset, bioma, bonus, escala de custos pos-prestigio).
 - Efeito do "bonus de moral" da sessao nova.
-- Save do jogo (serializar o estado do `sim`) e junta-lo ao save da ingestao: entra no M2.
+- Migracao de save entre versoes do motor (hoje save de outra versao e descartado).
