@@ -20,3 +20,8 @@
 - Pos-Imperial: prestigio (nova aldeia em outro bioma, bonus permanente), o jogo nao acaba.
 - Sessao viva so anima, sem efeito na producao.
 - Detalhes em docs/REGRAS.md.
+
+## 2026-10-29 (progressao comparavel)
+- Revisao: o usuario apontou que desenvolvedores gastam bem mais tokens e que o valor esta em comparar aldeias entre jogadores. Decisao: curva FIXA, sem auto-calibrar nem perfil. Substitui os limiares 10k/100k/400k e o "Imperial em ~1 mes".
+- Metrica: renda acumulada vitalicia R; nivel n com L(n)=5000x1,25^n; eras nos niveis 10/20/30 (~47k / ~433k / ~4M). Prestigio nao zera R.
+- Pesos mantidos; UI mostra tokens crus ao lado da renda.
