@@ -6,6 +6,8 @@
 
 ## Proximo
 - [x] Decidido: aldeia comeca do zero (baseline `now`); historico existente nao conta.
-- [ ] Rascunho das regras da aldeia: pesos por tipo de token (cache read domina ~200x), recursos, eras, decisor.
+- [x] Rascunho das regras v1 em docs/REGRAS.md (pesos, eras, decisor, prestigio).
+- [ ] Preencher o que REGRAS.md deixa em aberto: predios/unidades/techs por era e minimos por era.
+- [ ] Implementar o motor de simulacao (modulo puro, testavel) lendo os eventos da ingestao.
 - [ ] Detectar fim de sessao / sessao ativa (liveness do session manager ainda nao portado) para aldeoes animados.
 - [ ] Modelo de save do jogo (separado do save da ingestao) e como a ingestao alimenta a simulacao.
